@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/conversations_provider.dart';
+import 'chat_screen.dart';
 
 class ConversationsListScreen extends StatefulWidget {
   const ConversationsListScreen({super.key});
@@ -44,7 +45,12 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                 title: Text(conversation.name),
                 subtitle: Text(conversation.members.map((m) => m.firstName).join(', ')),
                 onTap: () {
-                  // Navigate to chat screen for this conversation
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(conversationId: conversation.id),
+                    ),
+                  );
                 },
               );
             },
