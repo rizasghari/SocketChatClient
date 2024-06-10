@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/conversations_provider.dart';
 import 'screens/authentication/signup_screen.dart';
 import 'screens/conversations_screen.dart';
 import 'screens/authentication/login_screen.dart';
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ConversationsProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -24,7 +26,7 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: '/login',
         routes: {
-          '/': (context) => const ConversationsScreen(),
+          '/': (context) => const ConversationsListScreen(),
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => const SignupScreen(),
         },

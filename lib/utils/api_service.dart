@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import '../models/conversation.dart';
 import '../models/login_response.dart';
 import '../models/api_reponse.dart';
 
@@ -51,5 +52,33 @@ class ApiService {
     }
 
     return false;
+  }
+
+
+  /// Fetches a list of conversations for the authenticated user.
+  ///
+  /// The [token] parameter is the authentication token for the user.
+  ///
+  /// Returns a [Future] that completes with a [List] of [Conversation] objects.
+  /// If the request is successful, the list will contain the conversations for the user.
+  /// If the request fails, an empty list is returned.
+   static Future<List<Conversation>> fetchConversations(String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/conversations/my?page=1&size=100'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      if (responseData['success']) {
+        List<dynamic> data = responseData['data']['conversations'];
+        return data.map((json) => Conversation.fromJson(json)).toList();
+      }
+    }
+
+    return [];
   }
 }

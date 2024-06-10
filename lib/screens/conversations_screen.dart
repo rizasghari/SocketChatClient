@@ -1,7 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/conversations_provider.dart';
 
-class ConversationsScreen extends StatelessWidget {
-  const ConversationsScreen({super.key});
+class ConversationsListScreen extends StatefulWidget {
+  const ConversationsListScreen({super.key});
+
+  @override
+  _ConversationsListScreenState createState() => _ConversationsListScreenState();
+}
+
+class _ConversationsListScreenState extends State<ConversationsListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final conversationsProvider = Provider.of<ConversationsProvider>(context, listen: false);
+    if (authProvider.loginResponse == null) {
+      return;
+    }
+    conversationsProvider.fetchConversations(authProvider.loginResponse!.token);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -9,8 +28,28 @@ class ConversationsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Conversations'),
       ),
-      body: const Center(
-        child: Text('Conversations'),
+      body: Consumer<ConversationsProvider>(
+        builder: (context, conversationsProvider, child) {
+          if (conversationsProvider.conversations.isEmpty) {
+            return const Center(
+              child: Text('No conversations found.'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: conversationsProvider.conversations.length,
+            itemBuilder: (context, index) {
+              final conversation = conversationsProvider.conversations[index];
+              return ListTile(
+                title: Text(conversation.name),
+                subtitle: Text(conversation.members.map((m) => m.firstName).join(', ')),
+                onTap: () {
+                  // Navigate to chat screen for this conversation
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
