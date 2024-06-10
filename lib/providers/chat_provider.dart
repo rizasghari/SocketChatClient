@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import '../models/message.dart';
 import '../models/user.dart';
@@ -8,10 +8,10 @@ import '../models/user.dart';
 class ChatProvider extends ChangeNotifier {
   late User user;
   late int conversationId;
-  late WebSocketChannel channel;
-  final List<Message> _messages = [];
+  late IOWebSocketChannel channel;
+  List<Message> _messages = [];
 
-  void initialize(User user, int conversationId, WebSocketChannel channel) {
+  void initialize(User user, int conversationId, IOWebSocketChannel channel) {
     this.user = user;
     this.conversationId = conversationId;
     this.channel = channel;
