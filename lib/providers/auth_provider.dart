@@ -16,4 +16,8 @@ class AuthProvider extends ChangeNotifier {
     }
     return false;
   }
+
+  Future<bool> register(String email, String firstName, String lastName, String password) async {
+    return await ApiService.register(email, firstName, lastName, password);
+  }
 }
