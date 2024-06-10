@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -15,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-
+    final Logger logger = Logger();
     return Scaffold(
       appBar: AppBar(
         title: Text('Login'),
@@ -27,18 +28,18 @@ class _LoginScreenState extends State<LoginScreen> {
           children: <Widget>[
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _isLoading
-                ? CircularProgressIndicator()
+                ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    child: Text('Login'),
+                    child: const Text('Login'),
                     onPressed: () async {
                       setState(() {
                         _isLoading = true;
@@ -51,10 +52,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         _isLoading = false;
                       });
                       if (success) {
-                        // Navigate to the next screen or show success message
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Login successful'),
+                        ));
                       } else {
-                        // Show error message
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text('Login failed'),
                         ));
                       }

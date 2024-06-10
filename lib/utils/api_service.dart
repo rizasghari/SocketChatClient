@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import '../models/login_response.dart';
+import '../models/api_reponse.dart';
 
 class ApiService {
   static const String baseUrl = 'http://10.0.2.2:8000/api/v1';
-
+  static Logger logger = Logger();
   static Future<LoginResponse?> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
@@ -15,10 +18,15 @@ class ApiService {
       }),
     );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      if (responseData['success']) {
-        return LoginResponse.fromJson(responseData['data']);
+    final responseData = json.decode(response.body);
+    final APiResponse apiResponse = APiResponse.fromJson(responseData);
+    logger.i("Login Response: ${response.body}");
+    if (response.statusCode == 200 && apiResponse.success) {
+      logger.i("Login Success");
+      return LoginResponse.fromJson(apiResponse.data);
+    } else {
+      for (final error in apiResponse.errors!) {
+        logger.e("Login Error", error);
       }
     }
 
