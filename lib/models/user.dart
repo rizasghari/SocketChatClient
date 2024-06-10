@@ -3,7 +3,7 @@ class User {
   final String firstName;
   final String lastName;
   final String email;
-  final String profilePhoto;
+  final String? profilePhoto;
 
   User({
     required this.id,
