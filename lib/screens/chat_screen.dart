@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:safe_device/safe_device.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
@@ -15,22 +18,39 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   IOWebSocketChannel? _channel;
   ChatProvider? _chatProvider;
 
   @override
   void initState() {
     super.initState();
+    _initializeWebSocket();
+  }
+
+  Future<void> _initializeWebSocket() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (authProvider.loginResponse == null) {
       return;
     }
     final token = authProvider.loginResponse!.token;
     final user = authProvider.loginResponse!.user;
-    final url = 'ws://10.0.2.2:8000/ws?conversationId=${widget.conversationId}';
+
+    String socketUrl =
+        'ws://10.0.2.2:8000/ws?conversationId=${widget.conversationId}';
+    if (Platform.isAndroid) {
+      bool isRealDevice = await SafeDevice.isRealDevice;
+      if (!isRealDevice) {
+        socketUrl =
+            'ws://10.0.2.2:8000/ws?conversationId=${widget.conversationId}';
+      } else {
+        socketUrl =
+            'ws://192.168.1.59:8000/ws?conversationId=${widget.conversationId}';
+      }
+    }
 
     _channel = IOWebSocketChannel.connect(
-      Uri.parse(url),
+      Uri.parse(socketUrl),
       headers: {
         'Authorization': token,
       },
@@ -38,17 +58,47 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _chatProvider = ChatProvider()
       ..initialize(user, widget.conversationId, _channel!);
+
+    // Scroll to bottom on new messages
+    _chatProvider?.addListener(() {
+      if (_chatProvider?.messages.isNotEmpty == true) {
+        _scrollToBottom();
+      }
+    });
+
+    setState(() {});
+  }
+
+  void _scrollToBottom() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
   void dispose() {
     _chatProvider?.dispose();
     _controller.dispose();
+    _scrollController.dispose();
+  
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_chatProvider == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Chat'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return ChangeNotifierProvider.value(
       value: _chatProvider!,
       child: Scaffold(
@@ -61,22 +111,27 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Consumer<ChatProvider>(
                 builder: (context, chatProvider, child) {
                   return ListView.builder(
+                    controller: _scrollController,
                     itemCount: chatProvider.messages.length,
                     itemBuilder: (context, index) {
                       final message = chatProvider.messages[index];
                       final isMe = message.senderId == chatProvider.user.id;
                       return ListTile(
                         title: Align(
-                          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                          alignment: isMe
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 12.0),
                             decoration: BoxDecoration(
                               color: isMe ? Colors.blue : Colors.grey[300],
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             child: Text(
                               message.content,
-                              style: TextStyle(color: isMe ? Colors.white : Colors.black),
+                              style: TextStyle(
+                                  color: isMe ? Colors.white : Colors.black),
                             ),
                           ),
                         ),
@@ -93,7 +148,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
-                      decoration: const InputDecoration(labelText: 'Send a message'),
+                      decoration:
+                          const InputDecoration(labelText: 'Send a message'),
                     ),
                   ),
                   IconButton(
