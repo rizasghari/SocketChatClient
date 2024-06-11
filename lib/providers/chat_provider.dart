@@ -9,7 +9,7 @@ class ChatProvider extends ChangeNotifier {
   late User user;
   late int conversationId;
   late IOWebSocketChannel channel;
-  List<Message> _messages = [];
+  final List<Message> _messages = [];
 
   void initialize(User user, int conversationId, IOWebSocketChannel channel) {
     this.user = user;

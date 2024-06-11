@@ -7,7 +7,7 @@ import '../providers/chat_provider.dart';
 class ChatScreen extends StatefulWidget {
   final int conversationId;
 
-  ChatScreen({required this.conversationId});
+  const ChatScreen({super.key, required this.conversationId});
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -22,6 +22,9 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.loginResponse == null) {
+      return;
+    }
     final token = authProvider.loginResponse!.token;
     final user = authProvider.loginResponse!.user;
     final url = 'ws://10.0.2.2:8000/ws?conversationId=${widget.conversationId}';
@@ -34,7 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     _chatProvider = ChatProvider()
-      ..initialize(user!, widget.conversationId, _channel!);
+      ..initialize(user, widget.conversationId, _channel!);
   }
 
   @override

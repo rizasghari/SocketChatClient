@@ -1,15 +1,31 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import '../models/conversation.dart';
 import '../models/login_response.dart';
 import '../models/api_reponse.dart';
+import 'package:safe_device/safe_device.dart';
+
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:8000/api/v1';
+
+  static Future<String> _getBaseUrl() async {
+    String baseUrl = "http://10.0.2.2:8000/api/v1";
+    if (Platform.isAndroid) {
+      bool isRealDevice = await SafeDevice.isRealDevice;
+      if (!isRealDevice) {
+        baseUrl = 'http://10.0.2.2:8000/api/v1';
+      } else {
+        baseUrl = 'http://192.168.1.59:8000/api/v1';
+      }
+    }
+    return baseUrl;
+  }
+
   static Logger logger = Logger();
   static Future<LoginResponse?> login(String email, String password) async {
+    final baseUrl = await _getBaseUrl();
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
       headers: {'Content-Type': 'application/json'},
@@ -23,7 +39,6 @@ class ApiService {
     final APiResponse apiResponse = APiResponse.fromJson(responseData);
     logger.i("Login Response: ${response.body}");
     if (response.statusCode == 200 && apiResponse.success) {
-      logger.i("Login Success");
       return LoginResponse.fromJson(apiResponse.data);
     } else {
       for (final error in apiResponse.errors!) {
@@ -35,6 +50,7 @@ class ApiService {
   }
 
   static Future<bool> register(String email, String firstName, String lastName, String password) async {
+    final baseUrl = await _getBaseUrl();
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
       headers: {'Content-Type': 'application/json'},
@@ -63,6 +79,7 @@ class ApiService {
   /// If the request is successful, the list will contain the conversations for the user.
   /// If the request fails, an empty list is returned.
    static Future<List<Conversation>> fetchConversations(String token) async {
+    final baseUrl = await _getBaseUrl();
     final response = await http.get(
       Uri.parse('$baseUrl/conversations/my?page=1&size=100'),
       headers: {
