@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_chat_flutter/repositories/local_storage.dart';
 import '../providers/auth_provider.dart';
 import '../providers/conversations_provider.dart';
 import 'chat_screen.dart';
@@ -7,25 +8,30 @@ import 'chat_screen.dart';
 class ConversationsListScreen extends StatefulWidget {
   const ConversationsListScreen({super.key});
   @override
-  _ConversationsListScreenState createState() => _ConversationsListScreenState();
+  _ConversationsListScreenState createState() =>
+      _ConversationsListScreenState();
 }
 
 class _ConversationsListScreenState extends State<ConversationsListScreen> {
-
-  late AuthProvider _authProvider;
-  late ConversationsProvider _conversationsProvider;
+  AuthProvider? _authProvider;
 
   @override
   void initState() {
     super.initState();
+    _initialize();
+  }
 
+  Future<void> _initialize() async {
     _authProvider = Provider.of<AuthProvider>(context, listen: false);
-    _conversationsProvider = Provider.of<ConversationsProvider>(context, listen: false);
-    if (_authProvider.loginResponse == null) {
+    final conversationsProvider =
+        Provider.of<ConversationsProvider>(context, listen: false);
+    if (_authProvider == null || _authProvider!.loginResponse == null) {
       return;
     }
-    _conversationsProvider.fetchConversations(_authProvider.loginResponse!.token);
-    _authProvider.discoverUsers(_authProvider.loginResponse!.token);
+    var jwtToken = await LocalStorage.getString('jwt_token');
+    jwtToken ??= _authProvider!.loginResponse!.token;
+    conversationsProvider.fetchConversations(jwtToken);
+    _authProvider!.discoverUsers(jwtToken);
   }
 
   @override
@@ -40,7 +46,9 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
             height: 120,
             child: Consumer<AuthProvider>(
               builder: (context, discoverUsersProvider, child) {
-                if (_authProvider.discoverableUsers == null || _authProvider.discoverableUsers!.isEmpty) {
+                if (_authProvider == null ||
+                    _authProvider!.discoverableUsers == null ||
+                    _authProvider!.discoverableUsers!.isEmpty) {
                   return const Center(
                     child: Text('No new users found.'),
                   );
@@ -48,9 +56,9 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
 
                 return ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _authProvider.discoverableUsers!.length,
+                  itemCount: _authProvider!.discoverableUsers!.length,
                   itemBuilder: (context, index) {
-                    final user = _authProvider.discoverableUsers![index];
+                    final user = _authProvider!.discoverableUsers![index];
                     return GestureDetector(
                       onTap: () {
                         // Handle user tap to start a new conversation
@@ -97,15 +105,19 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                 return ListView.builder(
                   itemCount: conversationsProvider.conversations.length,
                   itemBuilder: (context, index) {
-                    final conversation = conversationsProvider.conversations[index];
+                    final conversation =
+                        conversationsProvider.conversations[index];
                     return ListTile(
                       title: Text(conversation.name),
-                      subtitle: Text(conversation.members.map((m) => m.firstName).join(', ')),
+                      subtitle: Text(conversation.members
+                          .map((m) => m.firstName)
+                          .join(', ')),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ChatScreen(conversationId: conversation.id),
+                            builder: (context) =>
+                                ChatScreen(conversationId: conversation.id),
                           ),
                         );
                       },

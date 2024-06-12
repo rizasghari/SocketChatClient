@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/login_response.dart';
 import '../models/user.dart';
-import '../repository/api_service.dart';
+import '../repositories/api_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   LoginResponse? _loginResponse;

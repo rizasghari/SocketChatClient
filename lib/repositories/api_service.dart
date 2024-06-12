@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:socket_chat_flutter/repositories/local_storage.dart';
 import '../models/conversation.dart';
 import '../models/login_response.dart';
 import '../models/api_reponse.dart';
@@ -44,7 +45,14 @@ class ApiService {
     final APiResponse apiResponse = APiResponse.fromJson(responseData);
     logger.i("Login Response: ${response.body}");
     if (response.statusCode == 200 && apiResponse.success) {
-      return LoginResponse.fromJson(apiResponse.data);
+      var loginResponse = LoginResponse.fromJson(apiResponse.data);
+      if (await LocalStorage.setString("jwt_token", loginResponse.token)) {
+        logger.i("Saved JWT Token in local storage: ${loginResponse.token}");
+        return loginResponse;
+      } else {
+        logger.e("Failed to save JWT Token in local storage");
+        return null;
+      }
     } else {
       for (final error in apiResponse.errors!) {
         logger.e("Login Error", error);

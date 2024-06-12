@@ -1,9 +1,7 @@
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:safe_device/safe_device.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
