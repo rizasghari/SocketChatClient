@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/login_response.dart';
-import '../utils/api_service.dart';
+import '../models/user.dart';
+import '../repository/api_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   LoginResponse? _loginResponse;
-
   LoginResponse? get loginResponse => _loginResponse;
+
+  List<User>? _discoverableUsers;
+  List<User>? get discoverableUsers => _discoverableUsers;
 
   Future<bool> login(String email, String password) async {
     final loginResponse = await ApiService.login(email, password);
@@ -17,7 +20,13 @@ class AuthProvider extends ChangeNotifier {
     return false;
   }
 
-  Future<bool> register(String email, String firstName, String lastName, String password) async {
+  Future<bool> register(
+      String email, String firstName, String lastName, String password) async {
     return await ApiService.register(email, firstName, lastName, password);
+  }
+
+  Future<void> discoverUsers(String token) async {
+    _discoverableUsers = await ApiService.discoverUsers(token);
+    notifyListeners();
   }
 }

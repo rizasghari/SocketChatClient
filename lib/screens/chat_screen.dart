@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:safe_device/safe_device.dart';
@@ -38,16 +39,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     String socketUrl =
         'ws://10.0.2.2:8000/ws?conversationId=${widget.conversationId}';
-    if (Platform.isAndroid) {
-      bool isRealDevice = await SafeDevice.isRealDevice;
-      if (!isRealDevice) {
-        socketUrl =
-            'ws://10.0.2.2:8000/ws?conversationId=${widget.conversationId}';
-      } else {
-        socketUrl =
-            'ws://192.168.1.59:8000/ws?conversationId=${widget.conversationId}';
-      }
-    }
+
+    if (kIsWeb) {
+      socketUrl = 'ws://localhost:8000/ws?conversationId=${widget.conversationId}';
+    } 
 
     _channel = IOWebSocketChannel.connect(
       Uri.parse(socketUrl),
@@ -82,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _chatProvider?.dispose();
     _controller.dispose();
     _scrollController.dispose();
-  
+
     super.dispose();
   }
 

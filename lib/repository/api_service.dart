@@ -1,25 +1,30 @@
 import 'dart:convert';
-import 'dart:io';
+// import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import '../models/conversation.dart';
 import '../models/login_response.dart';
 import '../models/api_reponse.dart';
-import 'package:safe_device/safe_device.dart';
-
+import '../models/user.dart';
+// import 'package:safe_device/safe_device.dart';
 
 class ApiService {
-
   static Future<String> _getBaseUrl() async {
     String baseUrl = "http://10.0.2.2:8000/api/v1";
-    if (Platform.isAndroid) {
-      bool isRealDevice = await SafeDevice.isRealDevice;
-      if (!isRealDevice) {
-        baseUrl = 'http://10.0.2.2:8000/api/v1';
-      } else {
-        baseUrl = 'http://192.168.1.59:8000/api/v1';
-      }
+    if (kIsWeb) {
+      baseUrl = 'http://localhost:8000/api/v1';
+    } else {
+      baseUrl = 'http://10.0.2.2:8000/api/v1';
     }
+    // if (Platform.isAndroid) {
+    //   bool isRealDevice = await SafeDevice.isRealDevice;
+    //   if (!isRealDevice) {
+    //     baseUrl = 'http://10.0.2.2:8000/api/v1';
+    //   } else {
+    //     baseUrl = 'http://192.168.1.59:8000/api/v1';
+    //   }
+    // }
     return baseUrl;
   }
 
@@ -49,7 +54,8 @@ class ApiService {
     return null;
   }
 
-  static Future<bool> register(String email, String firstName, String lastName, String password) async {
+  static Future<bool> register(
+      String email, String firstName, String lastName, String password) async {
     final baseUrl = await _getBaseUrl();
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
@@ -70,15 +76,7 @@ class ApiService {
     return false;
   }
 
-
-  /// Fetches a list of conversations for the authenticated user.
-  ///
-  /// The [token] parameter is the authentication token for the user.
-  ///
-  /// Returns a [Future] that completes with a [List] of [Conversation] objects.
-  /// If the request is successful, the list will contain the conversations for the user.
-  /// If the request fails, an empty list is returned.
-   static Future<List<Conversation>> fetchConversations(String token) async {
+  static Future<List<Conversation>> fetchConversations(String token) async {
     final baseUrl = await _getBaseUrl();
     final response = await http.get(
       Uri.parse('$baseUrl/conversations/my?page=1&size=100'),
@@ -93,6 +91,27 @@ class ApiService {
       if (responseData['success']) {
         List<dynamic> data = responseData['data']['conversations'];
         return data.map((json) => Conversation.fromJson(json)).toList();
+      }
+    }
+
+    return [];
+  }
+
+  static Future<List<User>> discoverUsers(String token) async {
+    final baseUrl = await _getBaseUrl();
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/discover?page=1&size=100'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      if (responseData['success']) {
+        List<dynamic> data = responseData['data']['users'];
+        return data.map((json) => User.fromJson(json)).toList();
       }
     }
 
