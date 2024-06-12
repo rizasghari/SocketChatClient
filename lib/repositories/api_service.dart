@@ -1,6 +1,4 @@
 import 'dart:convert';
-// import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:socket_chat_flutter/repositories/local_storage.dart';
@@ -8,25 +6,12 @@ import '../models/conversation.dart';
 import '../models/login_response.dart';
 import '../models/api_reponse.dart';
 import '../models/user.dart';
-// import 'package:safe_device/safe_device.dart';
 
 class ApiService {
   static Future<String> _getBaseUrl() async {
-    String baseUrl = "http://10.0.2.2:8000/api/v1";
-    if (kIsWeb) {
-      baseUrl = 'http://localhost:8000/api/v1';
-    } else {
-      baseUrl = 'http://10.0.2.2:8000/api/v1';
-    }
-    // if (Platform.isAndroid) {
-    //   bool isRealDevice = await SafeDevice.isRealDevice;
-    //   if (!isRealDevice) {
-    //     baseUrl = 'http://10.0.2.2:8000/api/v1';
-    //   } else {
-    //     baseUrl = 'http://192.168.1.59:8000/api/v1';
-    //   }
-    // }
-    return baseUrl;
+    String? apiHost = await LocalStorage.getString('api_host')
+        .then((value) => value == null ? '10.0.2.2' : value.trim());
+    return "http://$apiHost:8000/api/v1";
   }
 
   static Logger logger = Logger();

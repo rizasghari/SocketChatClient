@@ -1,7 +1,7 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_chat_flutter/repositories/local_storage.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
@@ -35,12 +35,11 @@ class _ChatScreenState extends State<ChatScreen> {
     final token = authProvider.loginResponse!.token;
     final user = authProvider.loginResponse!.user;
 
-    String socketUrl =
-        'ws://10.0.2.2:8000/ws?conversationId=${widget.conversationId}';
+    String? apiHost = await LocalStorage.getString('api_host')
+        .then((value) => value == null ? '10.0.2.2' : value.trim());
 
-    if (kIsWeb) {
-      socketUrl = 'ws://localhost:8000/ws?conversationId=${widget.conversationId}';
-    } 
+    String socketUrl =
+        'ws://$apiHost:8000/ws?conversationId=${widget.conversationId}';
 
     _channel = IOWebSocketChannel.connect(
       Uri.parse(socketUrl),
