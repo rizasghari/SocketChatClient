@@ -28,11 +28,24 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _initializeWebSocket() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.loginResponse == null) {
+
+    var jwtToken = await LocalStorage.getString('jwt_token');
+
+    if (jwtToken == null) {
+      if (authProvider.loginResponse == null) {
+        Navigator.pushReplacementNamed(context, '/login');
+        return;
+      } else {
+        jwtToken = authProvider.loginResponse?.token;
+      }
+    }
+
+    if (jwtToken == null) {
+      Navigator.pushReplacementNamed(context, '/login');
       return;
     }
-    final token = authProvider.loginResponse!.token;
-    final user = authProvider.loginResponse!.user;
+
+    var user = authProvider.loginResponse!.user;
 
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
@@ -43,7 +56,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _channel = IOWebSocketChannel.connect(
       Uri.parse(socketUrl),
       headers: {
-        'Authorization': token,
+        'Authorization': jwtToken,
       },
     );
 

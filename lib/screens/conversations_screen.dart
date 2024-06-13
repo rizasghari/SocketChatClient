@@ -25,12 +25,16 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     _authProvider = Provider.of<AuthProvider>(context, listen: false);
     final conversationsProvider =
         Provider.of<ConversationsProvider>(context, listen: false);
-    if (_authProvider == null || _authProvider!.loginResponse == null) {
-      return;
-    }
+
     var jwtToken = await LocalStorage.getString('jwt_token');
-    jwtToken ??= _authProvider!.loginResponse!.token;
-    conversationsProvider.fetchConversations(jwtToken);
+    if (jwtToken == null && _authProvider != null ||
+        _authProvider!.loginResponse != null) {
+      jwtToken = _authProvider!.loginResponse!.token;
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+
+    conversationsProvider.fetchConversations(jwtToken!);
     _authProvider!.discoverUsers(jwtToken);
   }
 

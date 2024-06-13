@@ -11,7 +11,9 @@ class ApiService {
   static Future<String> _getBaseUrl() async {
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
-    return "http://$apiHost:8000/api/v1";
+    var baseUrl = "http://$apiHost:8000/api/v1";
+    logger.i("API Base URL: $baseUrl");
+    return baseUrl;
   }
 
   static Logger logger = Logger();
@@ -40,7 +42,7 @@ class ApiService {
       }
     } else {
       for (final error in apiResponse.errors!) {
-        logger.e("Login Error", error);
+        logger.e("Login Error", error: error);
       }
     }
 
@@ -70,7 +72,11 @@ class ApiService {
   }
 
   static Future<List<Conversation>> fetchConversations(String token) async {
+    logger.i(
+        '########################## Fetching conversations ##########################');
+    logger.i('Fetching conversations with token: $token');
     final baseUrl = await _getBaseUrl();
+    logger.i('API Base URL: $baseUrl');
     final response = await http.get(
       Uri.parse('$baseUrl/conversations/my?page=1&size=100'),
       headers: {

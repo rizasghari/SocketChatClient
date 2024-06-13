@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import '../models/conversation.dart';
 import '../repositories/api_service.dart';
 
@@ -7,10 +8,11 @@ class ConversationsProvider extends ChangeNotifier {
 
   List<Conversation> get conversations => _conversations;
   
-  get logger => null;
+  static Logger logger = Logger();
 
   Future<void> fetchConversations(String token) async {
     logger.i('########################## Fetching conversations ##########################');
+    logger.i('Fetching conversations with token: $token');
     _conversations = await ApiService.fetchConversations(token);
     notifyListeners();
   }
