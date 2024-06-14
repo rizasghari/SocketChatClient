@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:socket_chat_flutter/providers/chat_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/conversations_provider.dart';
-import 'repositories/local_storage.dart';
+import 'services/local_storage_service.dart';
 import 'screens/authentication/signup_screen.dart';
 import 'screens/base_url_selector.dart';
 import 'screens/conversations_screen.dart';

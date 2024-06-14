@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:socket_chat_flutter/repositories/local_storage.dart';
+import '../services/local_storage_service.dart';
 import '../models/conversation.dart';
 import '../models/login_response.dart';
 import '../models/api_reponse.dart';

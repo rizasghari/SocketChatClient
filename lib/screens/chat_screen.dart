@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:socket_chat_flutter/repositories/local_storage.dart';
+import '../services/local_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';

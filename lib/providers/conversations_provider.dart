@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import '../models/conversation.dart';
-import '../repositories/api_service.dart';
+import '../services/api_service.dart';
 
 class ConversationsProvider extends ChangeNotifier {
   List<Conversation> _conversations = [];
