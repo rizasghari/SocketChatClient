@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../services/local_storage_service.dart';
 import '../providers/auth_provider.dart';
@@ -6,9 +7,12 @@ import '../providers/conversations_provider.dart';
 import 'chat_screen.dart';
 
 class ConversationsListScreen extends StatefulWidget {
-  const ConversationsListScreen({super.key});
+  ConversationsListScreen({super.key});
+
+  final Logger logger = Logger();
+
   @override
-  _ConversationsListScreenState createState() =>
+  State<ConversationsListScreen> createState() =>
       _ConversationsListScreenState();
 }
 
@@ -23,18 +27,16 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
 
   Future<void> _initialize() async {
     _authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final conversationsProvider =
+    ConversationsProvider conversationsProvider =
         Provider.of<ConversationsProvider>(context, listen: false);
 
     var jwtToken = await LocalStorage.getString('jwt_token');
-    if (jwtToken == null && _authProvider != null ||
-        _authProvider!.loginResponse != null) {
-      jwtToken = _authProvider!.loginResponse!.token;
-    } else {
-      Navigator.pushReplacementNamed(context, '/login');
+    if (jwtToken == null) {
+        Navigator.pushReplacementNamed(context, '/login');
+        return;
     }
 
-    conversationsProvider.fetchConversations(jwtToken!);
+    conversationsProvider.fetchConversations(jwtToken);
     _authProvider!.discoverUsers(jwtToken);
   }
 

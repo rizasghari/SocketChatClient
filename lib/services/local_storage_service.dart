@@ -13,4 +13,14 @@ class LocalStorage {
     final SharedPreferences prefs = await _prefs;
     return prefs.setString(key, value);
   }
+
+  static Future<bool> setInt(String key, int value) async { 
+    final SharedPreferences prefs = await _prefs;
+    return prefs.setInt(key, value);
+  }
+
+  static Future<int?> getInt(String key) async {
+    final SharedPreferences prefs = await _prefs;
+    return prefs.getInt(key);
+  }
 }

@@ -6,7 +6,7 @@ class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
@@ -65,12 +65,15 @@ class _SignupScreenState extends State<SignupScreen> {
                         _isLoading = false;
                       });
                       if (success) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('Registration successful! Please log in.'),
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content:
+                              Text('Registration successful! Please log in.'),
                         ));
                         Navigator.pop(context);
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
                           content: Text('Registration failed'),
                         ));
                       }

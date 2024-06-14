@@ -31,13 +31,17 @@ class ApiService {
     final responseData = json.decode(response.body);
     final APiResponse apiResponse = APiResponse.fromJson(responseData);
     logger.i("Login Response: ${response.body}");
+    
     if (response.statusCode == 200 && apiResponse.success) {
       var loginResponse = LoginResponse.fromJson(apiResponse.data);
-      if (await LocalStorage.setString("jwt_token", loginResponse.token)) {
-        logger.i("Saved JWT Token in local storage: ${loginResponse.token}");
+      var saveToken = await LocalStorage.setString("jwt_token", loginResponse.token);
+      var saveUserID = await LocalStorage.setInt("user_id", loginResponse.user.id);
+
+      if (saveToken && saveUserID) {
+        logger.i("Saved JWT token and user id in local storage: ${loginResponse.token}");
         return loginResponse;
       } else {
-        logger.e("Failed to save JWT Token in local storage");
+        logger.e("Failed to save JWT Token or user id in local storage");
         return null;
       }
     } else {
@@ -45,7 +49,6 @@ class ApiService {
         logger.e("Login Error", error: error);
       }
     }
-
     return null;
   }
 

@@ -3,19 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import '../models/message.dart';
-import '../models/user.dart';
 
 class ChatProvider extends ChangeNotifier {
-  late User user;
   late int conversationId;
-  late IOWebSocketChannel channel;
+  late IOWebSocketChannel socketChannel;
   final List<Message> _messages = [];
 
-  void initialize(User user, int conversationId, IOWebSocketChannel channel) {
-    this.user = user;
+  void initialize(int conversationId, IOWebSocketChannel socketChannel) {
     this.conversationId = conversationId;
-    this.channel = channel;
-    channel.stream.listen((message) {
+    this.socketChannel = socketChannel;
+    socketChannel.stream.listen((message) {
       final decodedMessage = Message.fromJson(jsonDecode(message)['payload']);
       if (decodedMessage.conversationId == conversationId) {
         _messages.add(decodedMessage);
@@ -34,12 +31,12 @@ class ChatProvider extends ChangeNotifier {
         "content": content,
       }
     };
-    channel.sink.add(jsonEncode(message));
+    socketChannel.sink.add(jsonEncode(message));
   }
 
   @override
   void dispose() {
-    channel.sink.close(status.goingAway);
+    socketChannel.sink.close(status.goingAway);
     super.dispose();
   }
 }

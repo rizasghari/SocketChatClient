@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/local_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
-import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -11,7 +10,7 @@ class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key, required this.conversationId});
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
@@ -19,6 +18,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   IOWebSocketChannel? _channel;
   ChatProvider? _chatProvider;
+  int? userID;
 
   @override
   void initState() {
@@ -27,25 +27,17 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _initializeWebSocket() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
     var jwtToken = await LocalStorage.getString('jwt_token');
-
-    if (jwtToken == null) {
-      if (authProvider.loginResponse == null) {
-        Navigator.pushReplacementNamed(context, '/login');
-        return;
-      } else {
-        jwtToken = authProvider.loginResponse?.token;
-      }
-    }
-
     if (jwtToken == null) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
 
-    var user = authProvider.loginResponse!.user;
+    userID = await LocalStorage.getInt('user_id');
+    if (userID == null) {
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
 
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
@@ -61,7 +53,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     _chatProvider = ChatProvider()
-      ..initialize(user, widget.conversationId, _channel!);
+      ..initialize(widget.conversationId, _channel!);
 
     // Scroll to bottom on new messages
     _chatProvider?.addListener(() {
@@ -119,7 +111,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     itemCount: chatProvider.messages.length,
                     itemBuilder: (context, index) {
                       final message = chatProvider.messages[index];
-                      final isMe = message.senderId == chatProvider.user.id;
+                      final isMe = message.senderId == userID;
                       return ListTile(
                         title: Align(
                           alignment: isMe

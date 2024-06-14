@@ -8,12 +8,17 @@ import 'screens/authentication/signup_screen.dart';
 import 'screens/base_url_selector.dart';
 import 'screens/conversations_screen.dart';
 import 'screens/authentication/login_screen.dart';
+import 'package:logger/logger.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  final Logger logger = Logger();
+
   String? jwtToken = await LocalStorage.getString('jwt_token');
+  logger.i("main JWT Token: $jwtToken");
   String? apiHost = await LocalStorage.getString('api_host');
+  logger.i("main API Host: $apiHost");
 
   runApp(ChatApp(jwtToken: jwtToken, apiHost: apiHost));
 }
@@ -39,10 +44,10 @@ class ChatApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         initialRoute:
-            apiHost == null ? '/env' : (jwtToken != null ? '/' : '/login'),
+            apiHost == null ? '/env' : (jwtToken == null ? '/login' : '/'),
         routes: {
           '/env': (context) => const EnvironmentSelectionPage(),
-          '/': (context) => const ConversationsListScreen(),
+          '/': (context) => ConversationsListScreen(),
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => const SignupScreen(),
         },
