@@ -9,7 +9,7 @@ import '../models/api_reponse.dart';
 import '../models/user.dart';
 
 class ApiService {
-  static Future<String> _getBaseUrl() async {
+  static Future<String> getBaseUrl() async {
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
     var baseUrl = "http://$apiHost:8000/api/v1";
@@ -19,7 +19,7 @@ class ApiService {
 
   static Logger logger = Logger();
   static Future<LoginResponse?> login(String email, String password) async {
-    final baseUrl = await _getBaseUrl();
+    final baseUrl = await getBaseUrl();
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
       headers: {'Content-Type': 'application/json'},
@@ -55,7 +55,7 @@ class ApiService {
 
   static Future<bool> register(
       String email, String firstName, String lastName, String password) async {
-    final baseUrl = await _getBaseUrl();
+    final baseUrl = await getBaseUrl();
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
       headers: {'Content-Type': 'application/json'},
@@ -79,7 +79,7 @@ class ApiService {
     logger.i(
         '########################## Fetching conversations ##########################');
     logger.i('Fetching conversations with token: $token');
-    final baseUrl = await _getBaseUrl();
+    final baseUrl = await getBaseUrl();
     logger.i('API Base URL: $baseUrl');
     final response = await http.get(
       Uri.parse('$baseUrl/conversations/my?page=1&size=100'),
@@ -101,7 +101,7 @@ class ApiService {
   }
 
   static Future<List<User>> discoverUsers(String token) async {
-    final baseUrl = await _getBaseUrl();
+    final baseUrl = await getBaseUrl();
     final response = await http.get(
       Uri.parse('$baseUrl/users/discover?page=1&size=100'),
       headers: {
@@ -122,7 +122,7 @@ class ApiService {
   }
 
   static Future<Profile?> fetchProfile(String token) async {
-    final baseUrl = await _getBaseUrl();
+    final baseUrl = await getBaseUrl();
     final response = await http.get(
       Uri.parse('$baseUrl/profile'),
       headers: {

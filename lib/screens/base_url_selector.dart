@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:socket_chat_flutter/main.dart';
+import '../main.dart';
 
 class EnvironmentSelectionPage extends StatelessWidget {
   const EnvironmentSelectionPage({super.key});

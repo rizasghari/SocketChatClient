@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:socket_chat_flutter/providers/profile_provider.dart';
-
+import '../providers/profile_provider.dart';
 import '../models/profile.dart';
 import '../services/local_storage_service.dart';
 import 'authentication/login_screen.dart';
+import 'base_url_selector.dart';
+import '../services/api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,6 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ProfileProvider? _profileProvider;
   Profile? user;
   bool _isLoading = true;
+  String? apiHost;
 
   @override
   void initState() {
@@ -31,6 +33,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => LoginScreen(from: "Profile"),
+        ),
+      );
+    }
+
+    apiHost = await LocalStorage.getString("api_host");
+    if (apiHost == null) {
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const EnvironmentSelectionPage(),
         ),
       );
     }
@@ -70,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           backgroundImage:
                               _profileProvider?.profile?.profilePhoto != null
                                   ? NetworkImage(
-                                      _profileProvider!.profile!.profilePhoto!)
+                                      "http://$apiHost${_profileProvider!.profile!.profilePhoto!}")
                                   : null,
                           child: _profileProvider?.profile?.profilePhoto == null
                               ? const Icon(Icons.person)

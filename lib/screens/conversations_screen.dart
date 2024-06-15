@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:socket_chat_flutter/screens/authentication/login_screen.dart';
+import 'authentication/login_screen.dart';
 import '../services/local_storage_service.dart';
 import '../providers/auth_provider.dart';
 import '../providers/conversations_provider.dart';

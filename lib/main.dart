@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:socket_chat_flutter/providers/chat_provider.dart';
-import 'package:socket_chat_flutter/providers/profile_provider.dart';
+import 'providers/chat_provider.dart';
+import 'providers/profile_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/conversations_provider.dart';
 import 'screens/authentication/login_screen.dart';
@@ -10,7 +10,7 @@ import 'services/local_storage_service.dart';
 import 'screens/authentication/signup_screen.dart';
 import 'screens/base_url_selector.dart';
 import 'screens/conversations_screen.dart';
-import 'screens/profile_sceen.dart';
+import 'screens/profile_screen.dart';
 
 Logger logger = Logger();
 
