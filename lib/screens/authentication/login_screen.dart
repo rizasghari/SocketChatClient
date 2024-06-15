@@ -57,12 +57,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         _isLoading = false;
                       });
                       if (success) {
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text('Login successful'),
                         ));
                         Navigator.pushNamed(context, '/conversations');
                       } else {
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
                           content: Text('Login failed'),

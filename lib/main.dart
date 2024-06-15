@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_chat_flutter/providers/chat_provider.dart';
+import 'package:socket_chat_flutter/providers/profile_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/conversations_provider.dart';
 import 'screens/authentication/login_screen.dart';
@@ -40,6 +41,7 @@ class ChatApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ConversationsProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

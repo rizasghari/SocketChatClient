@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import '../models/profile.dart';
 import '../services/local_storage_service.dart';
 import '../models/conversation.dart';
 import '../models/login_response.dart';
@@ -119,4 +120,25 @@ class ApiService {
 
     return [];
   }
+
+  static Future<Profile?> fetchProfile(String token) async {
+    final baseUrl = await _getBaseUrl();
+    final response = await http.get(
+      Uri.parse('$baseUrl/profile'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      if (responseData['success']) {
+        return Profile.fromJson(responseData['data']);
+      }
+    }
+
+    return null;
+  }
 }
+
