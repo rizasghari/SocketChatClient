@@ -82,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           backgroundImage:
                               _profileProvider?.profile?.profilePhoto != null
                                   ? NetworkImage(
-                                      "http://$apiHost${_profileProvider!.profile!.profilePhoto!}")
+                                      "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}")
                                   : null,
                           child: _profileProvider?.profile?.profilePhoto == null
                               ? const Icon(Icons.person)
