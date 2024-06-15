@@ -19,10 +19,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Profile? user;
   bool _isLoading = true;
   String? apiHost;
+  static const double coverHeight = 200.0;
+  static const double profileHeight = 140.0;
+  late double profilePhotoFromTop;
 
   @override
   void initState() {
     super.initState();
+    profilePhotoFromTop = coverHeight - profileHeight / 2;
     _initialize();
   }
 
@@ -60,39 +64,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var coverHeight = 200.0;
-    var profileHeight = 144.0;
-    var profilePhotoFromTop = coverHeight - profileHeight / 2;
     return Scaffold(
       body: Consumer<ProfileProvider>(
         builder: (context, profileProvider, child) {
           return _isLoading
               ? const CircularProgressIndicator()
-              : Stack(clipBehavior: Clip.none, alignment: Alignment.center, children: [
-                  Container(
-                    height: coverHeight,
-                    decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                      colors: [Color(0xFFFACCCC), Color(0xFFF6EFE9)],
-                    )),
-                  ),
-                  Positioned(
-                      top: profilePhotoFromTop,
-                      child: CircleAvatar(
-                        radius: profileHeight / 2,
-                        backgroundImage: _profileProvider
-                                    ?.profile?.profilePhoto !=
-                                null
-                            ? NetworkImage(
-                                "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}")
-                            : null,
-                        child: _profileProvider?.profile?.profilePhoto == null
-                            ? const Icon(Icons.person)
-                            : null,
-                      )),
-                ]);
+              : ListView(
+                  children: [
+                    buildTop(),
+                    buildProfile(),
+                  ],
+                );
         },
       ),
     );
+  }
+
+  Widget buildProfile() {
+    return Column(
+      children: [
+        const SizedBox(height: 10.0),
+        Text(
+          _profileProvider?.profile?.firstName ?? '',
+          style: const TextStyle(
+            fontSize: 28.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10.0),
+        Text(
+          _profileProvider?.profile?.email ?? '',
+          style: const TextStyle(fontSize: 20.0, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget coverImage() {
+    return Container(
+      height: coverHeight,
+      decoration: const BoxDecoration(
+          gradient: LinearGradient(
+        colors: [Color(0xFFFACCCC), Color(0xFFF6EFE9)],
+      )),
+    );
+  }
+
+  Widget profilePhoto() {
+    return CircleAvatar(
+      radius: profileHeight / 2,
+      backgroundImage: _profileProvider?.profile?.profilePhoto != null
+          ? NetworkImage(
+              "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}")
+          : null,
+      child: _profileProvider?.profile?.profilePhoto == null
+          ? const Icon(Icons.person)
+          : null,
+    );
+  }
+
+  Widget buildTop() {
+    return Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: profileHeight / 2),
+            child: coverImage(),
+          ),
+          Positioned(top: profilePhotoFromTop, child: profilePhoto()),
+        ]);
   }
 }

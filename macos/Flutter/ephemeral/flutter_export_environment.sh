@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
 export "FLUTTER_ROOT=/Users/rizaasghari/Documents/flutter/sdk/flutter"
-export "FLUTTER_APPLICATION_PATH=/Users/rizaasghari/Documents/SocketChatProject/socketChatClient/socket_chat_flutter"
+export "FLUTTER_APPLICATION_PATH=/Users/rizaasghari/Documents/SocketChatProject/socket_chat_client"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
