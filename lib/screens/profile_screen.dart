@@ -60,39 +60,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var coverHeight = 200.0;
+    var profileHeight = 144.0;
+    var profilePhotoFromTop = coverHeight - profileHeight / 2;
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Consumer<ProfileProvider>(
-          builder: (context, profileProvider, child) {
-            return _isLoading
-                ? const CircularProgressIndicator()
-                : Column(children: [
-                    Stack(
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          height: 280,
-                          decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                            colors: [Color(0xFFFACCCC), Color(0xFFF6EFE9)],
-                          )),
-                        ),
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundImage:
-                              _profileProvider?.profile?.profilePhoto != null
-                                  ? NetworkImage(
-                                      "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}")
-                                  : null,
-                          child: _profileProvider?.profile?.profilePhoto == null
-                              ? const Icon(Icons.person)
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ]);
-          },
-        ),
+      body: Consumer<ProfileProvider>(
+        builder: (context, profileProvider, child) {
+          return _isLoading
+              ? const CircularProgressIndicator()
+              : Stack(clipBehavior: Clip.none, alignment: Alignment.center, children: [
+                  Container(
+                    height: coverHeight,
+                    decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                      colors: [Color(0xFFFACCCC), Color(0xFFF6EFE9)],
+                    )),
+                  ),
+                  Positioned(
+                      top: profilePhotoFromTop,
+                      child: CircleAvatar(
+                        radius: profileHeight / 2,
+                        backgroundImage: _profileProvider
+                                    ?.profile?.profilePhoto !=
+                                null
+                            ? NetworkImage(
+                                "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}")
+                            : null,
+                        child: _profileProvider?.profile?.profilePhoto == null
+                            ? const Icon(Icons.person)
+                            : null,
+                      )),
+                ]);
+        },
       ),
     );
   }
