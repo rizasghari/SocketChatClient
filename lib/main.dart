@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_chat_flutter/providers/chat_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/conversations_provider.dart';
+import 'screens/authentication/login_screen.dart';
 import 'services/local_storage_service.dart';
 import 'screens/authentication/signup_screen.dart';
 import 'screens/base_url_selector.dart';
 import 'screens/conversations_screen.dart';
-import 'screens/authentication/login_screen.dart';
-import 'package:logger/logger.dart';
+import 'screens/profile_sceen.dart';
+
+Logger logger = Logger();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final Logger logger = Logger();
-
   String? jwtToken = await LocalStorage.getString('jwt_token');
-  logger.i("main JWT Token: $jwtToken");
   String? apiHost = await LocalStorage.getString('api_host');
-  logger.i("main API Host: $apiHost");
+  logger.i("JWT Token: $jwtToken");
+  logger.i("API Host: $apiHost");
 
   runApp(ChatApp(jwtToken: jwtToken, apiHost: apiHost));
 }
@@ -31,6 +32,9 @@ class ChatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    logger.i("API Host: $apiHost");
+    var initialRoute = apiHost == null ? '/env' : (jwtToken == null ? '/login' : '/conversations');
+    logger.i("Initial route: $initialRoute");
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
@@ -43,13 +47,14 @@ class ChatApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        initialRoute:
-            apiHost == null ? '/env' : (jwtToken == null ? '/login' : '/'),
+        // initialRoute: initialRoute,
+        initialRoute: initialRoute,
         routes: {
           '/env': (context) => const EnvironmentSelectionPage(),
-          '/': (context) => ConversationsListScreen(),
-          '/login': (context) => const LoginScreen(),
+          '/conversations': (context) => ConversationsListScreen(),
+          '/login': (context) => LoginScreen(from: 'Home Page',),
           '/signup': (context) => const SignupScreen(),
+          '/profile': (context) => const ProfileScreen()
         },
       ),
     );

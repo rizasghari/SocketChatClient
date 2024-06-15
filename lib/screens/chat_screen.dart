@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/local_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/chat_provider.dart';
+import 'authentication/login_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   final int conversationId;
@@ -29,7 +30,12 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _initializeWebSocket() async {
     var jwtToken = await LocalStorage.getString('jwt_token');
     if (jwtToken == null) {
-      Navigator.pushReplacementNamed(context, '/login');
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(from: "Chat Screen"),
+        ),
+      );
       return;
     }
 

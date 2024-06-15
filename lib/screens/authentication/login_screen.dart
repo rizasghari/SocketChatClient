@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String from;
+  final Logger logger = Logger();
+  LoginScreen({super.key, required this.from}) {
+    logger.i("LoginScreen from: $from");
+  }
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -56,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             .showSnackBar(const SnackBar(
                           content: Text('Login successful'),
                         ));
-                        Navigator.pushNamed(context, '/');
+                        Navigator.pushNamed(context, '/conversations');
                       } else {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(

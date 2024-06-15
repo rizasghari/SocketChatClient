@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_chat_flutter/screens/authentication/login_screen.dart';
 import '../services/local_storage_service.dart';
 import '../providers/auth_provider.dart';
 import '../providers/conversations_provider.dart';
@@ -32,11 +33,15 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
 
     var jwtToken = await LocalStorage.getString('jwt_token');
     if (jwtToken == null) {
-        Navigator.pushReplacementNamed(context, '/login');
-        return;
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(from: "Conversations"),
+        ),
+      );
     }
 
-    conversationsProvider.fetchConversations(jwtToken);
+    conversationsProvider.fetchConversations(jwtToken!);
     _authProvider!.discoverUsers(jwtToken);
   }
 
@@ -45,6 +50,22 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Conversations'),
+      ),
+      bottomNavigationBar: NavigationBar(
+        destinations: const [
+          NavigationDestination(
+              icon: Icon(Icons.message), label: 'Conversations'),
+          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+        onDestinationSelected: (int index) {
+          // Handle navigation
+          if (index == 0) {
+            Navigator.pushNamed(context, '/conversations');
+          } else if (index == 1) {
+            Navigator.pushNamed(context, '/profile');
+          }
+        },
+        selectedIndex: 0,
       ),
       body: Column(
         children: [
