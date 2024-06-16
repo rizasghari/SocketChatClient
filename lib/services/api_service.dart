@@ -20,6 +20,7 @@ class ApiService {
   }
 
   static Logger logger = Logger();
+
   static Future<LoginResponse?> login(String email, String password) async {
     final baseUrl = await getBaseUrl();
     final response = await http.post(
@@ -34,14 +35,17 @@ class ApiService {
     final responseData = json.decode(response.body);
     final APiResponse apiResponse = APiResponse.fromJson(responseData);
     logger.i("Login Response: ${response.body}");
-    
+
     if (response.statusCode == 200 && apiResponse.success) {
       var loginResponse = LoginResponse.fromJson(apiResponse.data);
-      var saveToken = await LocalStorage.setString("jwt_token", loginResponse.token);
-      var saveUserID = await LocalStorage.setInt("user_id", loginResponse.user.id);
+      var saveToken =
+          await LocalStorage.setString("jwt_token", loginResponse.token);
+      var saveUserID =
+          await LocalStorage.setInt("user_id", loginResponse.user.id);
 
       if (saveToken && saveUserID) {
-        logger.i("Saved JWT token and user id in local storage: ${loginResponse.token}");
+        logger.i(
+            "Saved JWT token and user id in local storage: ${loginResponse.token}");
         return loginResponse;
       } else {
         logger.e("Failed to save JWT Token or user id in local storage");
@@ -143,8 +147,7 @@ class ApiService {
     return null;
   }
 
-  static
-  Future<String?> uploadProfilePhoto(String token, File file) async {
+  static Future<String?> uploadProfilePhoto(String token, File file) async {
     final baseUrl = await getBaseUrl();
     final uri = Uri.parse('$baseUrl/users/upload-profile-photo');
 
@@ -172,9 +175,31 @@ class ApiService {
         String newProfilePhoto = responseData['data'];
         return newProfilePhoto;
       }
-    } else {
-      return null;
     }
+    return null;
+  }
+
+  static Future<Profile?> updateProfile(
+      String token, String firstName, String lastName) async {
+    final baseUrl = await getBaseUrl();
+    final response = await http.put(
+      Uri.parse('$baseUrl/users'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'first_name': firstName,
+        'last_name': lastName,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      if (responseData['success']) {
+        return Profile.fromJson(responseData['data']);
+      }
+    }
+    return null;
   }
 }
-

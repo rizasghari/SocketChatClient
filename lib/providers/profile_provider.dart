@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 
 class ProfileProvider extends ChangeNotifier {
   Profile? _profile;
+
   Profile? get profile => _profile;
 
   Future<bool> fetchProfile(String token) async {
@@ -20,5 +21,15 @@ class ProfileProvider extends ChangeNotifier {
   Future<String?> uploadProfilePhoto(String token, File file) async {
     await Future.delayed(const Duration(seconds: 2));
     return await ApiService.uploadProfilePhoto(token, file);
+  }
+
+  Future<bool> updateProfile(
+      String token, String firstName, String lastName) async {
+    await Future.delayed(const Duration(seconds: 2));
+    _profile = await ApiService.updateProfile(token, firstName, lastName);
+    if (_profile != null) {
+      return true;
+    }
+    return false;
   }
 }

@@ -33,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   late final TextEditingController _firstNameController;
   late final TextEditingController _lastNameController;
+  bool _formEnabled = true;
 
   bool _isUploading = false;
   File? _selectedFile;
@@ -55,7 +56,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _isUploading = true;
       });
-      final url = await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
+      final url =
+          await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
       logger.i("Uploaded profile photo: $url");
       setState(() {
         _isUploading = false;
@@ -65,6 +67,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Please select a file to upload'),
       ));
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    if (_formEnabled) {
+      setState(() {
+        _formEnabled = false;
+      });
+      bool updated = await _profileProvider!.updateProfile(
+          jwtToken!, _firstNameController.text, _lastNameController.text);
+      if (!mounted) return;
+      if (updated) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Profile updated successfully'),
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Failed to update profile'),
+        ));
+      }
+      setState(() {
+        _formEnabled = true;
+      });
     }
   }
 
@@ -102,7 +127,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (fetched) {
       setState(() {
-        profilePhotoUrl = "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}";
+        profilePhotoUrl =
+            "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}";
         _isLoading = false;
         _firstNameController =
             TextEditingController(text: _profileProvider?.profile?.firstName);
@@ -133,42 +159,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget buildProfile() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Text(_profileProvider?.profile?.email ?? '',
-              style: const TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              )),
-          const SizedBox(height: 20.0),
-          TextField(
-            onChanged: (value) {},
-            controller: _firstNameController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'First name',
-              hintText: 'Enter your first name',
-            ),
+      child: Column(children: [
+        Text(_profileProvider?.profile?.email ?? '',
+            style: const TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            )),
+        const SizedBox(height: 20.0),
+        TextField(
+          onChanged: (value) {},
+          controller: _firstNameController,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText: 'First name',
+            hintText: 'Enter your first name',
+            enabled: _formEnabled,
           ),
-          const SizedBox(height: 20.0),
-          TextField(
-            onChanged: (value) {},
-            controller: _lastNameController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
+        ),
+        const SizedBox(height: 20.0),
+        TextField(
+          onChanged: (value) {},
+          controller: _lastNameController,
+          decoration: InputDecoration(
+              border: const OutlineInputBorder(),
               labelText: 'Last name',
               hintText: 'Enter your last name',
-            ),
-          ),
-          const SizedBox(height: 20.0),
-          FilledButton(
-              onPressed: () {},
-              style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.blue)),
-              child: const Text('Save')),
-        ],
-      ),
+              enabled: _formEnabled),
+        ),
+        const SizedBox(height: 20.0),
+        FilledButton(
+          onPressed: () {
+            _saveProfile();
+          },
+          style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(Colors.blue)),
+          child: _formEnabled
+              ? const Text('Update')
+              : const CircularProgressIndicator(),
+        ),
+      ]),
     );
   }
 
@@ -187,9 +217,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget profilePhoto() {
     return CircleAvatar(
       radius: profileHeight / 2,
-      backgroundImage: profilePhotoUrl != null
-          ? NetworkImage(profilePhotoUrl!)
-          : null,
+      backgroundImage:
+          profilePhotoUrl != null ? NetworkImage(profilePhotoUrl!) : null,
       child: _profileProvider?.profile?.profilePhoto == null
           ? const Icon(Icons.person)
           : null,
