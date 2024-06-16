@@ -104,9 +104,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       height: coverHeight,
       decoration: const BoxDecoration(
-          gradient: LinearGradient(
-        colors: [Color(0xFFFACCCC), Color(0xFFF6EFE9)],
-      )),
+        image: DecorationImage(
+          image: AssetImage('assets/images/cover.jpeg'),
+          fit: BoxFit.cover,
+        ),
+      ),
     );
   }
 
