@@ -41,6 +41,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   late String? profilePhotoUrl;
 
+  String? get _firstNameErrorText {
+    final text = _firstNameController.value.text;
+    if (text.isEmpty) {
+      return 'Can\'t be empty';
+    }
+    if (text.length < 4) {
+      return 'Too short';
+    }
+    return null;
+  }
+
+  String? get _lastNameErrorText {
+    final text = _lastNameController.value.text;
+    if (text.isEmpty) {
+      return 'Can\'t be empty';
+    }
+    if (text.length < 4) {
+      return 'Too short';
+    }
+    return null;
+  }
+
   Future<void> _pickFile() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -130,8 +152,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         profilePhotoUrl =
             "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}";
         _isLoading = false;
+
         _firstNameController =
             TextEditingController(text: _profileProvider?.profile?.firstName);
+
         _lastNameController =
             TextEditingController(text: _profileProvider?.profile?.lastName);
       });
@@ -168,35 +192,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
             )),
         const SizedBox(height: 20.0),
         TextField(
-          onChanged: (value) {},
           controller: _firstNameController,
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             labelText: 'First name',
             hintText: 'Enter your first name',
             enabled: _formEnabled,
+            errorText: _firstNameErrorText,
           ),
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 20.0),
         TextField(
-          onChanged: (value) {},
           controller: _lastNameController,
           decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: 'Last name',
-              hintText: 'Enter your last name',
-              enabled: _formEnabled),
+            border: const OutlineInputBorder(),
+            labelText: 'Last name',
+            hintText: 'Enter your last name',
+            enabled: _formEnabled,
+            errorText: _lastNameErrorText,
+          ),
+          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 20.0),
         FilledButton(
           onPressed: () {
-            _saveProfile();
+            if (_firstNameErrorText == null && _lastNameErrorText == null) {
+              _saveProfile();
+            }
           },
           style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(Colors.blue)),
           child: _formEnabled
               ? const Text('Update')
-              : const CircularProgressIndicator(),
+              : const SizedBox(
+                  height: 20.0,
+                  width: 20.0,
+                  child: Center(
+                      child: CircularProgressIndicator(
+                    color: Colors.white,
+                        strokeWidth: 2.0,
+                  )),
+                ),
         ),
       ]),
     );
