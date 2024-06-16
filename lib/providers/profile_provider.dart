@@ -17,7 +17,7 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> uploadProfilePhoto(String token, File file) async {
+  Future<String?> uploadProfilePhoto(String token, File file) async {
     await Future.delayed(const Duration(seconds: 2));
     return await ApiService.uploadProfilePhoto(token, file);
   }

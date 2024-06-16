@@ -144,7 +144,7 @@ class ApiService {
   }
 
   static
-  Future<bool> uploadProfilePhoto(String token, File file) async {
+  Future<String?> uploadProfilePhoto(String token, File file) async {
     final baseUrl = await getBaseUrl();
     final uri = Uri.parse('$baseUrl/users/upload-profile-photo');
 
@@ -166,9 +166,14 @@ class ApiService {
     var response = await request.send();
 
     if (response.statusCode == 200) {
-      return true;
+      var responseString = await response.stream.bytesToString();
+      final responseData = json.decode(responseString);
+      if (responseData['success']) {
+        String newProfilePhoto = responseData['data'];
+        return newProfilePhoto;
+      }
     } else {
-      return false;
+      return null;
     }
   }
 }

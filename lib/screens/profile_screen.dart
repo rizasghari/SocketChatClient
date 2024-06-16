@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 import '../models/profile.dart';
 import '../services/local_storage_service.dart';
 import 'authentication/login_screen.dart';
 import 'base_url_selector.dart';
-import '../services/api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -21,9 +21,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ProfileProvider? _profileProvider;
   Profile? user;
   String? apiHost;
+  late String? jwtToken;
+
+  Logger logger = Logger();
 
   bool _isLoading = true;
-  bool _isUploading = false;
 
   static const double coverHeight = 200.0;
   static const double profileHeight = 140.0;
@@ -31,12 +33,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   late final TextEditingController _firstNameController;
   late final TextEditingController _lastNameController;
-  late final TextEditingController _emailController;
 
-  late String? jwtToken;
-
+  bool _isUploading = false;
   File? _selectedFile;
   final ImagePicker _picker = ImagePicker();
+
+  late String? profilePhotoUrl;
 
   Future<void> _pickFile() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -53,9 +55,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _isUploading = true;
       });
-      await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
+      final url = await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
+      logger.i("Uploaded profile photo: $url");
       setState(() {
         _isUploading = false;
+        profilePhotoUrl = "http://$apiHost:9000$url";
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -98,13 +102,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (fetched) {
       setState(() {
+        profilePhotoUrl = "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}";
         _isLoading = false;
         _firstNameController =
             TextEditingController(text: _profileProvider?.profile?.firstName);
         _lastNameController =
             TextEditingController(text: _profileProvider?.profile?.lastName);
-        _emailController =
-            TextEditingController(text: _profileProvider?.profile?.email);
       });
     }
   }
@@ -184,9 +187,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget profilePhoto() {
     return CircleAvatar(
       radius: profileHeight / 2,
-      backgroundImage: _profileProvider?.profile?.profilePhoto != null
-          ? NetworkImage(
-              "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}")
+      backgroundImage: profilePhotoUrl != null
+          ? NetworkImage(profilePhotoUrl!)
           : null,
       child: _profileProvider?.profile?.profilePhoto == null
           ? const Icon(Icons.person)
