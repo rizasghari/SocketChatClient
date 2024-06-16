@@ -17,11 +17,17 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   ProfileProvider? _profileProvider;
   Profile? user;
-  bool _isLoading = true;
   String? apiHost;
+
+  bool _isLoading = true;
+
   static const double coverHeight = 200.0;
   static const double profileHeight = 140.0;
   late double profilePhotoFromTop;
+
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  late final TextEditingController _emailController;
 
   @override
   void initState() {
@@ -58,6 +64,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (fetched) {
       setState(() {
         _isLoading = false;
+        _firstNameController =
+            TextEditingController(text: _profileProvider?.profile?.firstName);
+        _lastNameController =
+            TextEditingController(text: _profileProvider?.profile?.lastName);
+        _emailController =
+            TextEditingController(text: _profileProvider?.profile?.email);
       });
     }
   }
@@ -81,22 +93,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget buildProfile() {
-    return Column(
-      children: [
-        const SizedBox(height: 10.0),
-        Text(
-          _profileProvider?.profile?.firstName ?? '',
-          style: const TextStyle(
-            fontSize: 28.0,
-            fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Text(_profileProvider?.profile?.email ?? '',
+              style: const TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              )),
+          const SizedBox(height: 20.0),
+          TextField(
+            onChanged: (value) {},
+            controller: _firstNameController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'First name',
+              hintText: 'Enter your first name',
+            ),
           ),
-        ),
-        const SizedBox(height: 10.0),
-        Text(
-          _profileProvider?.profile?.email ?? '',
-          style: const TextStyle(fontSize: 20.0, color: Colors.grey),
-        ),
-      ],
+          const SizedBox(height: 20.0),
+          TextField(
+            onChanged: (value) {},
+            controller: _lastNameController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Last name',
+              hintText: 'Enter your last name',
+            ),
+          ),
+          const SizedBox(height: 20.0),
+          FilledButton(
+              onPressed: () {},
+              style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.blue)),
+              child: const Text('Save')),
+        ],
+      ),
     );
   }
 
@@ -135,6 +169,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: coverImage(),
           ),
           Positioned(top: profilePhotoFromTop, child: profilePhoto()),
+          Positioned(
+              top: profilePhotoFromTop,
+              right: profileHeight + 15,
+              child: Container(
+                height: 30,
+                width: 30,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {},
+                  color: Colors.grey,
+                  iconSize: 20,
+                  padding: EdgeInsets.zero,
+                ),
+              )),
         ]);
   }
 }
