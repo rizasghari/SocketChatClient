@@ -27,8 +27,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   bool _isLoading = true;
 
-  static const double coverHeight = 200.0;
-  static const double profileHeight = 140.0;
+  static const double coverHeight = 150.0;
+  static const double profileHeight = 100.0;
   late double profilePhotoFromTop;
 
   late final TextEditingController _firstNameController;
@@ -187,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(_profileProvider?.profile?.email ?? '',
             style: const TextStyle(
               fontSize: 20.0,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w300,
               color: Colors.grey,
             )),
         const SizedBox(height: 20.0),
@@ -284,10 +284,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Positioned(top: profilePhotoFromTop, child: profilePhoto()),
           Positioned(
               top: profilePhotoFromTop,
-              right: profileHeight + 15,
+              right: profileHeight * 1.65,
               child: Container(
-                height: 30,
-                width: 30,
+                height: 25,
+                width: 25,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
@@ -295,8 +295,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: _isUploading
                     ? const SizedBox(
-                  height: 15.0,
-                  width: 15.0,
+                  height: 12.0,
+                  width: 12.0,
                   child: Center(
                       child: CircularProgressIndicator(
                         color: Colors.grey,
