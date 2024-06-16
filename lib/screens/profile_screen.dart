@@ -79,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isUploading = true;
       });
       final url =
-          await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
+      await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
       logger.i("Uploaded profile photo: $url");
       setState(() {
         _isUploading = false;
@@ -150,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (fetched) {
       setState(() {
         profilePhotoUrl =
-            "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}";
+        "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}";
         _isLoading = false;
 
         _firstNameController =
@@ -170,11 +170,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return _isLoading
               ? const CircularProgressIndicator()
               : ListView(
-                  children: [
-                    buildTop(),
-                    buildProfile(),
-                  ],
-                );
+            children: [
+              buildTop(),
+              buildProfile(),
+            ],
+          );
         },
       ),
     );
@@ -226,14 +226,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: _formEnabled
               ? const Text('Update')
               : const SizedBox(
-                  height: 20.0,
-                  width: 20.0,
-                  child: Center(
-                      child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2.0,
-                  )),
-                ),
+            height: 20.0,
+            width: 20.0,
+            child: Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.0,
+                )),
+          ),
         ),
       ]),
     );
@@ -255,7 +255,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return CircleAvatar(
       radius: profileHeight / 2,
       backgroundImage:
-          profilePhotoUrl != null ? NetworkImage(profilePhotoUrl!) : null,
+      profilePhotoUrl != null ? NetworkImage(profilePhotoUrl!) : null,
       child: _profileProvider?.profile?.profilePhoto == null
           ? const Icon(Icons.person)
           : null,
@@ -271,6 +271,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             margin: const EdgeInsets.only(bottom: profileHeight / 2),
             child: coverImage(),
           ),
+          Positioned(
+              top: 0,
+              left: 0,
+              child: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.arrow_back, color: Colors.white)
+              )
+          ),
           Positioned(top: profilePhotoFromTop, child: profilePhoto()),
           Positioned(
               top: profilePhotoFromTop,
@@ -285,23 +295,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: _isUploading
                     ? const SizedBox(
-                        height: 15.0,
-                        width: 15.0,
-                        child: Center(
-                            child: CircularProgressIndicator(
-                          color: Colors.grey,
-                          strokeWidth: 2.0,
-                        )),
-                      )
-                    : IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          _pickFile();
-                        },
+                  height: 15.0,
+                  width: 15.0,
+                  child: Center(
+                      child: CircularProgressIndicator(
                         color: Colors.grey,
-                        iconSize: 20,
-                        padding: EdgeInsets.zero,
-                      ),
+                        strokeWidth: 2.0,
+                      )),
+                )
+                    : IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    _pickFile();
+                  },
+                  color: Colors.grey,
+                  iconSize: 20,
+                  padding: EdgeInsets.zero,
+                ),
               )),
         ]);
   }
