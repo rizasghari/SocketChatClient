@@ -231,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Center(
                       child: CircularProgressIndicator(
                     color: Colors.white,
-                        strokeWidth: 2.0,
+                    strokeWidth: 2.0,
                   )),
                 ),
         ),
@@ -284,7 +284,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: Colors.white,
                 ),
                 child: _isUploading
-                    ? const CircularProgressIndicator()
+                    ? const SizedBox(
+                        height: 15.0,
+                        width: 15.0,
+                        child: Center(
+                            child: CircularProgressIndicator(
+                          color: Colors.grey,
+                          strokeWidth: 2.0,
+                        )),
+                      )
                     : IconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () {
