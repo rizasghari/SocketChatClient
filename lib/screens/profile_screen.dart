@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 import '../models/profile.dart';
@@ -20,6 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? apiHost;
 
   bool _isLoading = true;
+  bool _isUploading = false;
 
   static const double coverHeight = 200.0;
   static const double profileHeight = 140.0;
@@ -29,6 +33,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final TextEditingController _lastNameController;
   late final TextEditingController _emailController;
 
+  late String? jwtToken;
+
+  File? _selectedFile;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickFile() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedFile = File(pickedFile.path);
+        _uploadFile();
+      });
+    }
+  }
+
+  Future<void> _uploadFile() async {
+    if (_selectedFile != null) {
+      setState(() {
+        _isUploading = true;
+      });
+      await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
+      setState(() {
+        _isUploading = false;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please select a file to upload'),
+      ));
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _initialize() async {
-    var jwtToken = await LocalStorage.getString('jwt_token');
+    jwtToken = await LocalStorage.getString('jwt_token');
     if (jwtToken == null) {
       if (!mounted) return;
       Navigator.of(context).push(
@@ -180,13 +215,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   shape: BoxShape.circle,
                   color: Colors.white,
                 ),
-                child: IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {},
-                  color: Colors.grey,
-                  iconSize: 20,
-                  padding: EdgeInsets.zero,
-                ),
+                child: _isUploading
+                    ? const CircularProgressIndicator()
+                    : IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          _pickFile();
+                        },
+                        color: Colors.grey,
+                        iconSize: 20,
+                        padding: EdgeInsets.zero,
+                      ),
               )),
         ]);
   }

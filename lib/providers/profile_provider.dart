@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../models/profile.dart';
 import '../services/api_service.dart';
@@ -13,5 +15,10 @@ class ProfileProvider extends ChangeNotifier {
     } else {
       return false;
     }
+  }
+
+  Future<bool> uploadProfilePhoto(String token, File file) async {
+    await Future.delayed(const Duration(seconds: 2));
+    return await ApiService.uploadProfilePhoto(token, file);
   }
 }

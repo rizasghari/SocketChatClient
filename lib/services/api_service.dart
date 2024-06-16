@@ -1,12 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import '../models/profile.dart';
 import '../services/local_storage_service.dart';
 import '../models/conversation.dart';
 import '../models/login_response.dart';
-import '../models/api_reponse.dart';
+import '../models/api_response.dart';
 import '../models/user.dart';
+import 'package:path/path.dart' as path;
 
 class ApiService {
   static Future<String> getBaseUrl() async {
@@ -139,6 +141,35 @@ class ApiService {
     }
 
     return null;
+  }
+
+  static
+  Future<bool> uploadProfilePhoto(String token, File file) async {
+    final baseUrl = await getBaseUrl();
+    final uri = Uri.parse('$baseUrl/users/upload-profile-photo');
+
+    var request = http.MultipartRequest('POST', uri);
+
+    request.headers['Authorization'] = 'Bearer $token';
+
+    // Add the file to the request
+    var fileStream = http.ByteStream(file.openRead());
+    var length = await file.length();
+    var multipartFile = http.MultipartFile(
+      'profile_photo',
+      fileStream,
+      length,
+      filename: path.basename(file.path),
+    );
+    request.files.add(multipartFile);
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
