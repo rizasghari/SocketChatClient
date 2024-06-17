@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_chat_client/models/conversation.dart';
 import '../utils.dart';
 import 'authentication/login_screen.dart';
 import '../services/local_storage_service.dart';
@@ -20,6 +21,7 @@ class ConversationsListScreen extends StatefulWidget {
 
 class _ConversationsListScreenState extends State<ConversationsListScreen> {
   AuthProvider? _authProvider;
+  int? _currentUserID;
 
   @override
   void initState() {
@@ -44,6 +46,13 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
 
     conversationsProvider.fetchConversations(jwtToken!);
     _authProvider!.discoverUsers(jwtToken);
+
+    _currentUserID = await LocalStorage.getInt('user_id');
+    if (_currentUserID == null) {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
   }
 
   @override
@@ -145,15 +154,8 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       itemBuilder: (context, index) {
         final conversation = conversationsProvider.conversations[index];
         return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: conversation.members[0].profilePhoto != null
-                ? NetworkImage(conversation.members[0].profilePhoto!)
-                : null,
-            child: conversation.members[0].profilePhoto == null
-                ? const Icon(Icons.person)
-                : null,
-          ),
-          title: Text(conversation.name),
+          leading: _conversationItemUserProfilePhoto(conversation),
+          title: _conversationItemTitle(conversation),
           subtitle:
               Text(conversation.members.map((m) => m.firstName).join(', ')),
           onTap: () {
@@ -173,6 +175,31 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   Widget _noConversation() {
     return const Center(
       child: Text('No conversations found.'),
+    );
+  }
+
+  Widget _conversationItemUserProfilePhoto(Conversation conversation) {
+    return CircleAvatar(
+      backgroundImage: conversation.members[0].profilePhoto != null
+          ? NetworkImage(conversation.members[0].profilePhoto!)
+          : null,
+      child: conversation.members[0].profilePhoto == null
+          ? const Icon(Icons.person)
+          : null,
+    );
+  }
+
+  Widget _conversationItemTitle(Conversation conversation) {
+    var title = "";
+    for (var member in conversation.members) {
+      if (member.id != _currentUserID) {
+        title = "${member.firstName} ${member.lastName}";
+        break;
+      }
+    }
+    return Text(
+      title,
+      overflow: TextOverflow.ellipsis,
     );
   }
 }
