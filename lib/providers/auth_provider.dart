@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:socket_chat_client/utils.dart';
 import '../models/login_response.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
@@ -27,6 +28,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> discoverUsers(String token) async {
     _discoverableUsers = await ApiService.discoverUsers(token);
+    await Utils.setUsersListProfilePhotosURl(_discoverableUsers);
     notifyListeners();
   }
 }

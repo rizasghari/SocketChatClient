@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 import '../models/profile.dart';
 import '../services/local_storage_service.dart';
+import '../utils.dart';
 import 'authentication/login_screen.dart';
 import 'base_url_selector.dart';
 
@@ -81,9 +82,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final url =
       await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
       logger.i("Uploaded profile photo: $url");
+      var profilePhoto = await Utils.getProfilePhotoUrl(url!);
       setState(() {
         _isUploading = false;
-        profilePhotoUrl = "http://$apiHost:9000$url";
+        profilePhotoUrl = profilePhoto;
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -148,9 +150,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool fetched = await _profileProvider!.fetchProfile(jwtToken!);
 
     if (fetched) {
+      var profilePhoto = await Utils.getProfilePhotoUrl(_profileProvider!.profile!.profilePhoto!);
       setState(() {
-        profilePhotoUrl =
-        "http://$apiHost:9000${_profileProvider!.profile!.profilePhoto!}";
+        profilePhotoUrl = profilePhoto;
         _isLoading = false;
 
         _firstNameController =
