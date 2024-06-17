@@ -143,25 +143,53 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
             Utils.showSnackBar(context, "${user.firstName} ${user.lastName}");
           },
           child: Container(
-            width: 90,
+            width: 85,
             margin: const EdgeInsets.all(5.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 35,
-                  backgroundImage: user.profilePhoto != null
-                      ? NetworkImage(user.profilePhoto!)
-                      : null,
-                  child: user.profilePhoto == null
-                      ? const Icon(Icons.person)
-                      : null,
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundImage: user.profilePhoto != null
+                          ? NetworkImage(user.profilePhoto!)
+                          : null,
+                      child: user.profilePhoto == null
+                          ? const Icon(Icons.person)
+                          : null,
+                    ),
+                    const Positioned(
+                      child: SizedBox(
+                          width: 20.0,
+                          height: 20.0,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.0,
+                          )),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '${user.firstName} ${user.lastName}',
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 5.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 5.0),
+                    Text(
+                        user.firstName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis
+                    ),
+                  ],
                 ),
               ],
             ),
