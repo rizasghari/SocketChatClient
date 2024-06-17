@@ -22,7 +22,11 @@ class ConversationsListScreen extends StatefulWidget {
 
 class _ConversationsListScreenState extends State<ConversationsListScreen> {
   AuthProvider? _authProvider;
+  ConversationsProvider? conversationsProvider;
   int? _currentUserID;
+  String? jwtToken;
+  bool _isLoading = false;
+  int _discoverableUserIndex = -1;
 
   @override
   void initState() {
@@ -32,10 +36,10 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
 
   Future<void> _initialize() async {
     _authProvider = Provider.of<AuthProvider>(context, listen: false);
-    ConversationsProvider conversationsProvider =
+    conversationsProvider =
         Provider.of<ConversationsProvider>(context, listen: false);
 
-    var jwtToken = await LocalStorage.getString('jwt_token');
+    jwtToken = await LocalStorage.getString('jwt_token');
     if (jwtToken == null) {
       if (!mounted) return;
       Navigator.of(context).push(
@@ -45,14 +49,38 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       );
     }
 
-    conversationsProvider.fetchConversations(jwtToken!);
-    _authProvider!.discoverUsers(jwtToken);
+    if (conversationsProvider != null) {
+      conversationsProvider!.fetchConversations(jwtToken!);
+    }
+
+    _authProvider!.discoverUsers(jwtToken!);
 
     _currentUserID = await LocalStorage.getInt('user_id');
     if (_currentUserID == null) {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
       return;
+    }
+  }
+
+  Future<void> _createConversation(List<int> ids) async {
+    Conversation? conversation = await conversationsProvider!.createConversation(jwtToken!, ids);
+    setState(() {
+      _isLoading = false;
+    });
+    if (conversation != null && mounted) {
+      _authProvider!.discoverableUsers!.removeAt(_discoverableUserIndex);
+      setState(() {
+        _discoverableUserIndex = -1;
+      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(
+            conversationId: conversation.id,
+          ),
+        ),
+      );
     }
   }
 
@@ -140,7 +168,11 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         final user = _authProvider!.discoverableUsers![index];
         return GestureDetector(
           onTap: () {
-            Utils.showSnackBar(context, "${user.firstName} ${user.lastName}");
+            setState(() {
+              _discoverableUserIndex = index;
+              _isLoading = true;
+            });
+            _createConversation([user.id, _currentUserID!]);
           },
           child: Container(
             width: 85,
@@ -160,15 +192,9 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                           ? const Icon(Icons.person)
                           : null,
                     ),
-                    const Positioned(
-                      child: SizedBox(
-                          width: 20.0,
-                          height: 20.0,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.0,
-                          )),
-                    ),
+                    _isLoading && _discoverableUserIndex == index
+                        ? _createingConversationIndicator()
+                        : const SizedBox.shrink()
                   ],
                 ),
                 const SizedBox(height: 5.0),
@@ -184,11 +210,8 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                       ),
                     ),
                     const SizedBox(width: 5.0),
-                    Text(
-                        user.firstName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis
-                    ),
+                    Text(user.firstName,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ],
@@ -196,6 +219,18 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _createingConversationIndicator() {
+    return const Positioned(
+      child: SizedBox(
+          width: 20.0,
+          height: 20.0,
+          child: CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 2.0,
+          )),
     );
   }
 
