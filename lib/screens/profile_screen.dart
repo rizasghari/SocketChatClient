@@ -283,6 +283,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   icon: const Icon(Icons.arrow_back, color: Colors.white)
               )
           ),
+          Positioned(
+              top: 0,
+              right: 0,
+              child: IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.logout, color: Colors.redAccent)
+              )
+          ),
           Positioned(top: profilePhotoFromTop, child: profilePhoto()),
           Positioned(
               top: profilePhotoFromTop,

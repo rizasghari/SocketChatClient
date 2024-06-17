@@ -205,13 +205,16 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   }
 
   Widget _conversationItemUserProfilePhoto(Conversation conversation) {
+    String? photo;
+    for (var member in conversation.members) {
+      if (member.id != _currentUserID) {
+        photo = member.profilePhoto;
+        break;
+      }
+    }
     return CircleAvatar(
-      backgroundImage: conversation.members[0].profilePhoto != null
-          ? NetworkImage(conversation.members[0].profilePhoto!)
-          : null,
-      child: conversation.members[0].profilePhoto == null
-          ? const Icon(Icons.person)
-          : null,
+      backgroundImage: photo != null ? NetworkImage(photo) : null,
+      child: photo == null ? const Icon(Icons.person) : null,
     );
   }
 

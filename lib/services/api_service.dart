@@ -202,4 +202,28 @@ class ApiService {
     }
     return null;
   }
+
+  static Future<Conversation?> createConversation(String token, String title, List<int> users) async {
+    final baseUrl = await getBaseUrl();
+    final response = await http.post(
+      Uri.parse('$baseUrl/conversations'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'name': title,
+        "type": "CONVERSATION_TYPE_PRIVATE",
+        "users": users
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      if (responseData['success']) {
+        return Conversation.fromJson(responseData['data']);
+      }
+    }
+    return null;
+  }
 }
