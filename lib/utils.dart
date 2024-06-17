@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import 'models/conversation.dart';
 import 'models/user.dart';
 import 'services/local_storage_service.dart';
@@ -28,5 +30,13 @@ class Utils {
         user.profilePhoto = await getProfilePhotoUrl(user.profilePhoto!);
       }
     }
+  }
+
+  static void showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
   }
 }

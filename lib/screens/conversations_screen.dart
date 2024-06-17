@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -61,23 +62,36 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       appBar: AppBar(
         title: const Text('Conversations'),
       ),
-      bottomNavigationBar: NavigationBar(
-        destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.message), label: 'Conversations'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-        onDestinationSelected: (int index) {
-          // Handle navigation
-          if (index == 0) {
-            Navigator.pushNamed(context, '/conversations');
-          } else if (index == 1) {
-            Navigator.pushNamed(context, '/profile');
-          }
-        },
-        selectedIndex: 0,
-      ),
-      body: Column(
+      bottomNavigationBar: _navigationBar(),
+      body: _pageContent(),
+    );
+  }
+
+  NavigationBar _navigationBar() {
+    return NavigationBar(
+      destinations: const [
+        NavigationDestination(
+            icon: Icon(Icons.message), label: 'Conversations'),
+        NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
+      ],
+      onDestinationSelected: (int index) {
+        // Handle navigation
+        if (index == 0) {
+          Navigator.pushNamed(context, '/conversations');
+        } else if (index == 1) {
+          Navigator.pushNamed(context, '/profile');
+        }
+      },
+      selectedIndex: 0,
+    );
+  }
+
+  Widget _pageContent() {
+    return RefreshIndicator(
+      onRefresh: _handleRefresh,
+      color: Colors.white,
+      backgroundColor: Colors.blue,
+      child: Column(
         children: [
           SizedBox(
             height: 120,
@@ -99,14 +113,26 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     );
   }
 
+  Future<void> _handleRefresh() async {
+    _initialize();
+  }
+
   Widget _discoverableUsers() {
     if (_authProvider == null ||
         _authProvider!.discoverableUsers == null ||
         _authProvider!.discoverableUsers!.isEmpty) {
-      return const Center(
-        child: Text('No new users found.'),
-      );
+      return _noDiscoverableUsers();
     }
+    return _discoverableUsersList();
+  }
+
+  Widget _noDiscoverableUsers() {
+    return const Center(
+      child: Text('No new users found.'),
+    );
+  }
+
+  Widget _discoverableUsersList() {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
       itemCount: _authProvider!.discoverableUsers!.length,
@@ -114,16 +140,16 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         final user = _authProvider!.discoverableUsers![index];
         return GestureDetector(
           onTap: () {
-            // Handle user tap to start a new conversation
+            Utils.showSnackBar(context, "${user.firstName} ${user.lastName}");
           },
           child: Container(
-            width: 100,
-            margin: const EdgeInsets.all(8.0),
+            width: 90,
+            margin: const EdgeInsets.all(5.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  radius: 30,
+                  radius: 35,
                   backgroundImage: user.profilePhoto != null
                       ? NetworkImage(user.profilePhoto!)
                       : null,
