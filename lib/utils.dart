@@ -1,3 +1,4 @@
+import 'models/conversation.dart';
 import 'models/user.dart';
 import 'services/local_storage_service.dart';
 
@@ -14,6 +15,18 @@ class Utils {
     }
     for (var user in users) {
       user.profilePhoto = await getProfilePhotoUrl(user.profilePhoto!);
+    }
+  }
+
+  static Future<void> setConversationsMembersListProfilePhotosURl(
+      List<Conversation>? conversations) async {
+    if (conversations == null) {
+      return;
+    }
+    for (var conversations in conversations) {
+      for (var user in conversations.members) {
+        user.profilePhoto = await getProfilePhotoUrl(user.profilePhoto!);
+      }
     }
   }
 }

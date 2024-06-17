@@ -74,89 +74,105 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
             height: 120,
             child: Consumer<AuthProvider>(
               builder: (context, discoverUsersProvider, child) {
-                if (_authProvider == null ||
-                    _authProvider!.discoverableUsers == null ||
-                    _authProvider!.discoverableUsers!.isEmpty) {
-                  return const Center(
-                    child: Text('No new users found.'),
-                  );
-                }
-
-                return ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _authProvider!.discoverableUsers!.length,
-                  itemBuilder: (context, index) {
-                    final user = _authProvider!.discoverableUsers![index];
-                    return GestureDetector(
-                      onTap: () {
-                        // Handle user tap to start a new conversation
-                      },
-                      child: Container(
-                        width: 100,
-                        margin: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundImage: user.profilePhoto != null
-                                  ? NetworkImage(user.profilePhoto!)
-                                  : null,
-                              child: user.profilePhoto == null
-                                  ? const Icon(Icons.person)
-                                  : null,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${user.firstName} ${user.lastName}',
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
+                return _discoverableUsers();
               },
             ),
           ),
           Expanded(
             child: Consumer<ConversationsProvider>(
               builder: (context, conversationsProvider, child) {
-                if (conversationsProvider.conversations.isEmpty) {
-                  return const Center(
-                    child: Text('No conversations found.'),
-                  );
-                }
-
-                return ListView.builder(
-                  itemCount: conversationsProvider.conversations.length,
-                  itemBuilder: (context, index) {
-                    final conversation =
-                        conversationsProvider.conversations[index];
-                    return ListTile(
-                      title: Text(conversation.name),
-                      subtitle: Text(conversation.members
-                          .map((m) => m.firstName)
-                          .join(', ')),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ChatScreen(conversationId: conversation.id),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
+                return _conversationsList(conversationsProvider);
               },
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _discoverableUsers() {
+    if (_authProvider == null ||
+        _authProvider!.discoverableUsers == null ||
+        _authProvider!.discoverableUsers!.isEmpty) {
+      return const Center(
+        child: Text('No new users found.'),
+      );
+    }
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: _authProvider!.discoverableUsers!.length,
+      itemBuilder: (context, index) {
+        final user = _authProvider!.discoverableUsers![index];
+        return GestureDetector(
+          onTap: () {
+            // Handle user tap to start a new conversation
+          },
+          child: Container(
+            width: 100,
+            margin: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: user.profilePhoto != null
+                      ? NetworkImage(user.profilePhoto!)
+                      : null,
+                  child: user.profilePhoto == null
+                      ? const Icon(Icons.person)
+                      : null,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${user.firstName} ${user.lastName}',
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _conversationsList(ConversationsProvider conversationsProvider) {
+    if (conversationsProvider.conversations.isEmpty) {
+      return _noConversation();
+    }
+    return ListView.builder(
+      itemCount: conversationsProvider.conversations.length,
+      itemBuilder: (context, index) {
+        final conversation = conversationsProvider.conversations[index];
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundImage: conversation.members[0].profilePhoto != null
+                ? NetworkImage(conversation.members[0].profilePhoto!)
+                : null,
+            child: conversation.members[0].profilePhoto == null
+                ? const Icon(Icons.person)
+                : null,
+          ),
+          title: Text(conversation.name),
+          subtitle:
+              Text(conversation.members.map((m) => m.firstName).join(', ')),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ChatScreen(conversationId: conversation.id),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _noConversation() {
+    return const Center(
+      child: Text('No conversations found.'),
     );
   }
 }

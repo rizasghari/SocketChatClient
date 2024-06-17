@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import '../models/conversation.dart';
 import '../services/api_service.dart';
+import '../utils.dart';
 
 class ConversationsProvider extends ChangeNotifier {
   List<Conversation> _conversations = [];
@@ -11,9 +12,8 @@ class ConversationsProvider extends ChangeNotifier {
   static Logger logger = Logger();
 
   Future<void> fetchConversations(String token) async {
-    logger.i('########################## Fetching conversations ##########################');
-    logger.i('Fetching conversations with token: $token');
     _conversations = await ApiService.fetchConversations(token);
+    await Utils.setConversationsMembersListProfilePhotosURl(_conversations);
     notifyListeners();
   }
 }
