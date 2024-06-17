@@ -16,4 +16,14 @@ class ConversationsProvider extends ChangeNotifier {
     await Utils.setConversationsMembersListProfilePhotosURl(_conversations);
     notifyListeners();
   }
+
+  Future<Conversation?> createConversation(String token, List<int> userIds) async {
+    var conversation = await ApiService.createConversation(token, userIds);
+    if (conversation != null) {
+      _conversations.add(conversation);
+      await Utils.setConversationsMembersListProfilePhotosURl(_conversations);
+    }
+    notifyListeners();
+    return conversation;
+  }
 }

@@ -3,13 +3,11 @@ import 'user.dart';
 class Conversation {
   final int id;
   final String type;
-  final String name;
   final List<User> members;
 
   Conversation({
     required this.id,
     required this.type,
-    required this.name,
     required this.members,
   });
 
@@ -20,7 +18,6 @@ class Conversation {
     return Conversation(
       id: json['id'],
       type: json['type'],
-      name: json['name'],
       members: membersList,
     );
   }
