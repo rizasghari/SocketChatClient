@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../models/conversation.dart';
+import '../models/message.dart';
 import '../models/user.dart';
 import '../services/local_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/chat_provider.dart';
+import '../utils.dart';
 import 'authentication/login_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -228,26 +230,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       itemBuilder: (context, index) {
                         final message = chatProvider.messages[index];
                         final isMe = message.senderId == _currentUserID;
-                        return ListTile(
-                          title: Align(
-                            alignment: isMe
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8.0, horizontal: 12.0),
-                              decoration: BoxDecoration(
-                                color: isMe ? Colors.blue : Colors.grey[300],
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: Text(
-                                message.content,
-                                style: TextStyle(
-                                    color: isMe ? Colors.white : Colors.black),
-                              ),
-                            ),
-                          ),
-                        );
+                        return _messageItem(message, isMe);
                       },
                     );
                   },
@@ -295,5 +278,45 @@ class _ChatScreenState extends State<ChatScreen> {
             ],
           ),
         ));
+  }
+
+  ListTile _messageItem(Message message, bool isMe) {
+    return ListTile(
+      title: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: isMe ? Colors.blue : Colors.grey[300],
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Column(
+                crossAxisAlignment:
+                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message.content,
+                    style: TextStyle(color: isMe ? Colors.white : Colors.black),
+                  ),
+                  const SizedBox(height: 4.0),
+                  Text(
+                    Utils.getFormattedDate(message.createdAt),
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      color: isMe ? Colors.white60 : Colors.black38,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
