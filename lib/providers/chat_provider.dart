@@ -108,6 +108,11 @@ class ChatProvider extends ChangeNotifier {
     socketChannel.sink.close(status.goingAway);
   }
 
+  void markMessageAsRead(int messageId) {
+    logger.d("markMessageAsRead invoked with messageId:$messageId");
+    // notifyListeners();
+  }
+
   @override
   void dispose() {
     socketChannel.sink.close(status.goingAway);

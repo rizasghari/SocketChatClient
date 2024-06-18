@@ -1,8 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollview_observer/scrollview_observer.dart';
 import '../models/conversation.dart';
 import '../models/message.dart';
 import '../models/user.dart';
@@ -36,10 +37,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _initialize();
+    _initializeAsync();
   }
 
-  Future<void> _initialize() async {
+  Future<void> _initializeAsync() async {
     jwtToken = await LocalStorage.getString('jwt_token');
     if (jwtToken == null) {
       if (!mounted) return;
@@ -78,11 +79,13 @@ class _ChatScreenState extends State<ChatScreen> {
       ..initialize(widget.conversation.id, _channel!, _currentUserID!);
 
     if (_chatProvider != null) {
-      // _chatProvider?.addListener(() {
-      //   if (_chatProvider?.messages.isNotEmpty == true) {
-      //     _scrollToBottom();
-      //   }
-      // });
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _chatProvider?.addListener(() {
+          if (_chatProvider?.messages.isNotEmpty == true) {
+            _scrollToBottom();
+          }
+        });
+      });
 
       _chatProvider!
           .fetchConversationMessages(jwtToken!, widget.conversation.id);
@@ -93,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _scrollToBottom() {
     _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
+      _scrollController.position.minScrollExtent,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
@@ -223,14 +226,22 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       );
                     }
-                    return ListView.builder(
-                      controller: _scrollController,
-                      itemCount: chatProvider.messages.length,
-                      reverse: true,
-                      itemBuilder: (context, index) {
-                        final message = chatProvider.messages[index];
-                        final isMe = message.senderId == _currentUserID;
-                        return _messageItem(message, isMe);
+                    return ListViewObserver(
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: chatProvider.messages.length,
+                        reverse: true,
+                        itemBuilder: (context, index) {
+                          final message = chatProvider.messages[index];
+                          final isMe = message.senderId == _currentUserID;
+                          return _messageItem(message, isMe);
+                        },
+                      ),
+                      onObserve: (resultMap) {
+                        // Prints the first item index that is currently being displayed
+                        logger.i('firstChild.index -- ${resultMap.firstChild!.index}');
+                        // Prints all item indexs those are currently being displayed
+                        logger.i('displaying -- ${resultMap.displayingChildIndexList}');
                       },
                     );
                   },
@@ -304,12 +315,20 @@ class _ChatScreenState extends State<ChatScreen> {
                     style: TextStyle(color: isMe ? Colors.white : Colors.black),
                   ),
                   const SizedBox(height: 4.0),
-                  Text(
-                    Utils.getFormattedDate(message.createdAt),
-                    style: TextStyle(
-                      fontSize: 12.0,
-                      color: isMe ? Colors.white60 : Colors.black38,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        Utils.getFormattedDate(message.createdAt),
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          color: isMe ? Colors.white60 : Colors.black38,
+                        ),
+                      ),
+                      isMe ? const SizedBox(width: 5.0) : const SizedBox(width: 0.0),
+                      isMe ? const Icon(Icons.check_circle_outline, size: 16.0, color: Colors.white60) : const SizedBox(width: 0.0),
+                    ],
                   ),
                 ],
               ),
