@@ -281,6 +281,11 @@ class _ChatScreenState extends State<ChatScreen> {
                           Provider.of<ChatProvider>(context, listen: false)
                               .sendIsTypingSocketEvent(false, _currentUserID!);
                           _controller.clear();
+                          _scrollController.animateTo(
+                            0.0,
+                            duration: const Duration(milliseconds: 100),
+                            curve: Curves.easeOut,
+                          );
                         }
                       },
                     ),
