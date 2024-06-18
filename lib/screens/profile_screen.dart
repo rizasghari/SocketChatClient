@@ -80,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isUploading = true;
       });
       final url =
-      await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
+          await _profileProvider!.uploadProfilePhoto(jwtToken!, _selectedFile!);
       logger.i("Uploaded profile photo: $url");
       var profilePhoto = await Utils.getProfilePhotoUrl(url!);
       setState(() {
@@ -150,7 +150,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     bool fetched = await _profileProvider!.fetchProfile(jwtToken!);
 
     if (fetched) {
-      var profilePhoto = await Utils.getProfilePhotoUrl(_profileProvider!.profile!.profilePhoto!);
+      var profilePhoto = await Utils.getProfilePhotoUrl(
+          _profileProvider!.profile!.profilePhoto!);
       setState(() {
         profilePhotoUrl = profilePhoto;
         _isLoading = false;
@@ -164,19 +165,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Widget _pageIsLoading() {
+    return const Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Consumer<ProfileProvider>(
         builder: (context, profileProvider, child) {
           return _isLoading
-              ? const CircularProgressIndicator()
+              ? _pageIsLoading()
               : ListView(
-            children: [
-              buildTop(),
-              buildProfile(),
-            ],
-          );
+                  children: [
+                    buildTop(),
+                    buildProfile(),
+                  ],
+                );
         },
       ),
     );
@@ -228,14 +235,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: _formEnabled
               ? const Text('Update')
               : const SizedBox(
-            height: 20.0,
-            width: 20.0,
-            child: Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.0,
-                )),
-          ),
+                  height: 20.0,
+                  width: 20.0,
+                  child: Center(
+                      child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2.0,
+                  )),
+                ),
         ),
       ]),
     );
@@ -257,7 +264,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return CircleAvatar(
       radius: profileHeight / 2,
       backgroundImage:
-      profilePhotoUrl != null ? NetworkImage(profilePhotoUrl!) : null,
+          profilePhotoUrl != null ? NetworkImage(profilePhotoUrl!) : null,
       child: _profileProvider?.profile?.profilePhoto == null
           ? const Icon(Icons.person)
           : null,
@@ -280,9 +287,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  icon: const Icon(Icons.arrow_back, color: Colors.white)
-              )
-          ),
+                  icon: const Icon(Icons.arrow_back, color: Colors.white))),
           Positioned(
               top: 0,
               right: 0,
@@ -290,9 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  icon: const Icon(Icons.logout, color: Colors.redAccent)
-              )
-          ),
+                  icon: const Icon(Icons.logout, color: Colors.redAccent))),
           Positioned(top: profilePhotoFromTop, child: profilePhoto()),
           Positioned(
               top: profilePhotoFromTop,
@@ -307,23 +310,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: _isUploading
                     ? const SizedBox(
-                  height: 12.0,
-                  width: 12.0,
-                  child: Center(
-                      child: CircularProgressIndicator(
-                        color: Colors.grey,
-                        strokeWidth: 2.0,
-                      )),
-                )
+                        height: 12.0,
+                        width: 12.0,
+                        child: Center(
+                            child: CircularProgressIndicator(
+                          color: Colors.grey,
+                          strokeWidth: 2.0,
+                        )),
+                      )
                     : IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    _pickFile();
-                  },
-                  color: Colors.grey,
-                  iconSize: 20,
-                  padding: EdgeInsets.zero,
-                ),
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          _pickFile();
+                        },
+                        color: Colors.grey,
+                        iconSize: 20,
+                        padding: EdgeInsets.zero,
+                      ),
               )),
         ]);
   }

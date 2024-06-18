@@ -64,7 +64,8 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   }
 
   Future<void> _createConversation(List<int> ids) async {
-    Conversation? conversation = await conversationsProvider!.createConversation(jwtToken!, ids);
+    Conversation? conversation =
+        await conversationsProvider!.createConversation(jwtToken!, ids);
     setState(() {
       _isLoading = false;
     });
@@ -77,7 +78,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => ChatScreen(
-            conversationId: conversation.id,
+            conversation: conversation,
           ),
         ),
       );
@@ -251,8 +252,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    ChatScreen(conversationId: conversation.id),
+                builder: (context) => ChatScreen(conversation: conversation),
               ),
             );
           },

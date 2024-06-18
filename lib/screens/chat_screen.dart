@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/conversation.dart';
+import '../models/user.dart';
 import '../services/local_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/chat_provider.dart';
 import 'authentication/login_screen.dart';
 
 class ChatScreen extends StatefulWidget {
-  final int conversationId;
+  final Conversation conversation;
 
-  const ChatScreen({super.key, required this.conversationId});
+  const ChatScreen({super.key, required this.conversation});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -19,7 +21,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   IOWebSocketChannel? _channel;
   ChatProvider? _chatProvider;
-  int? userID;
+  int? _currentUserID;
+  User? _otherSideUser;
 
   @override
   void initState() {
@@ -39,17 +42,20 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    userID = await LocalStorage.getInt('user_id');
-    if (userID == null) {
+    _currentUserID = await LocalStorage.getInt('user_id');
+    if (_currentUserID == null && mounted) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
+
+    _otherSideUser = widget.conversation.members
+        .firstWhere((user) => user.id != _currentUserID);
 
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
 
     String socketUrl =
-        'ws://$apiHost:8000/ws?conversationId=${widget.conversationId}';
+        'ws://$apiHost:8000/ws?conversationId=${widget.conversation.id}';
 
     _channel = IOWebSocketChannel.connect(
       Uri.parse(socketUrl),
@@ -59,7 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     _chatProvider = ChatProvider()
-      ..initialize(widget.conversationId, _channel!);
+      ..initialize(widget.conversation.id, _channel!);
 
     // Scroll to bottom on new messages
     _chatProvider?.addListener(() {
@@ -88,25 +94,89 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  Widget _pageIsLoading() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Chat'),
+      ),
+      body: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget _userProfile() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        CircleAvatar(
+          radius: 20,
+          backgroundImage: _otherSideUser!.profilePhoto != null
+              ? NetworkImage(_otherSideUser!.profilePhoto!)
+              : null,
+          child: _otherSideUser!.profilePhoto == null
+              ? const Icon(Icons.person)
+              : null,
+        ),
+        const SizedBox(width: 8),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${_otherSideUser!.firstName} ${_otherSideUser!.lastName}',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const Text(
+              "Is typing...",
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  AppBar _appBar() {
+    return AppBar(
+      title: _userProfile(),
+      elevation: 4.0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue, Colors.purple],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_chatProvider == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Chat'),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return _pageIsLoading();
     }
 
     return ChangeNotifierProvider.value(
       value: _chatProvider!,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Chat'),
-        ),
+        appBar: _appBar(),
         body: Column(
           children: [
             Expanded(
@@ -117,7 +187,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     itemCount: chatProvider.messages.length,
                     itemBuilder: (context, index) {
                       final message = chatProvider.messages[index];
-                      final isMe = message.senderId == userID;
+                      final isMe = message.senderId == _currentUserID;
                       return ListTile(
                         title: Align(
                           alignment: isMe
