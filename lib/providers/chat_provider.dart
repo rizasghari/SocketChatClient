@@ -44,6 +44,10 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  void clearMessages() {
+    _messages.clear();
+  }
+
   @override
   void dispose() {
     socketChannel.sink.close(status.goingAway);

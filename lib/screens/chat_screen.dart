@@ -20,18 +20,20 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   IOWebSocketChannel? _channel;
+
   ChatProvider? _chatProvider;
   int? _currentUserID;
   User? _otherSideUser;
+  late var jwtToken;
 
   @override
   void initState() {
     super.initState();
-    _initializeWebSocket();
+    _initialize();
   }
 
-  Future<void> _initializeWebSocket() async {
-    var jwtToken = await LocalStorage.getString('jwt_token');
+  Future<void> _initialize() async {
+    jwtToken = await LocalStorage.getString('jwt_token');
     if (jwtToken == null) {
       if (!mounted) return;
       Navigator.of(context).push(
@@ -64,17 +66,19 @@ class _ChatScreenState extends State<ChatScreen> {
       },
     );
 
-    _chatProvider = ChatProvider()
+    _chatProvider = Provider.of<ChatProvider>(context, listen: false)
       ..initialize(widget.conversation.id, _channel!);
 
-    _chatProvider!.fetchConversationMessages(jwtToken, widget.conversation.id);
+    if (_chatProvider != null) {
+      // _chatProvider?.addListener(() {
+      //   if (_chatProvider?.messages.isNotEmpty == true) {
+      //     _scrollToBottom();
+      //   }
+      // });
 
-    // Scroll to bottom on new messages
-    _chatProvider?.addListener(() {
-      if (_chatProvider?.messages.isNotEmpty == true) {
-        _scrollToBottom();
-      }
-    });
+      _chatProvider!
+          .fetchConversationMessages(jwtToken, widget.conversation.id);
+    }
 
     setState(() {});
   }
@@ -89,7 +93,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _chatProvider?.dispose();
+    _chatProvider?.clearMessages();
+    // _chatProvider?.dispose();
     _controller.dispose();
     _scrollController.dispose();
 
@@ -185,73 +190,79 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_chatProvider == null) {
       return _pageIsLoading();
     }
-
     return ChangeNotifierProvider.value(
-      value: _chatProvider!,
-      child: Scaffold(
-        appBar: _appBar(),
-        body: Column(
-          children: [
-            Expanded(
-              child: Consumer<ChatProvider>(
-                builder: (context, chatProvider, child) {
-                  return ListView.builder(
-                    controller: _scrollController,
-                    itemCount: chatProvider.messages.length,
-                    itemBuilder: (context, index) {
-                      final message = chatProvider.messages[index];
-                      final isMe = message.senderId == _currentUserID;
-                      return ListTile(
-                        title: Align(
-                          alignment: isMe
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 12.0),
-                            decoration: BoxDecoration(
-                              color: isMe ? Colors.blue : Colors.grey[300],
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: Text(
-                              message.content,
-                              style: TextStyle(
-                                  color: isMe ? Colors.white : Colors.black),
-                            ),
-                          ),
+        value: _chatProvider,
+        child: Scaffold(
+          appBar: _appBar(),
+          body: Column(
+            children: [
+              Expanded(
+                child: Consumer<ChatProvider>(
+                  builder: (context, chatProvider, child) {
+                    if (chatProvider.messages.isEmpty) {
+                      return const Center(
+                        child: Center(
+                          child: CircularProgressIndicator(),
                         ),
                       );
-                    },
-                  );
-                },
+                    }
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: chatProvider.messages.length,
+                      itemBuilder: (context, index) {
+                        final message = chatProvider.messages[index];
+                        final isMe = message.senderId == _currentUserID;
+                        return ListTile(
+                          title: Align(
+                            alignment: isMe
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 12.0),
+                              decoration: BoxDecoration(
+                                color: isMe ? Colors.blue : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: Text(
+                                message.content,
+                                style: TextStyle(
+                                    color: isMe ? Colors.white : Colors.black),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration:
-                          const InputDecoration(labelText: 'Send a message'),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration:
+                            const InputDecoration(labelText: 'Send a message'),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: () {
-                      if (_controller.text.isNotEmpty) {
-                        _chatProvider?.sendMessage(_controller.text);
-                        _controller.clear();
-                      }
-                    },
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.send),
+                      onPressed: () {
+                        if (_controller.text.isNotEmpty) {
+                          Provider.of<ChatProvider>(context, listen: false)
+                              .sendMessage(_controller.text);
+                          _controller.clear();
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
+            ],
+          ),
+        ));
   }
 }
