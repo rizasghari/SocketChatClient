@@ -126,14 +126,18 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
             height: 120,
             child: Consumer<AuthProvider>(
               builder: (context, discoverUsersProvider, child) {
-                return _discoverableUsers();
+                return discoverUsersProvider.isDiscoverableUsersFetching
+                    ? const Center(child: CircularProgressIndicator())
+                    : _discoverableUsers();
               },
             ),
           ),
           Expanded(
             child: Consumer<ConversationsProvider>(
               builder: (context, conversationsProvider, child) {
-                return _conversationsList(conversationsProvider);
+                return conversationsProvider.isConversationsFetching
+                    ? const Center(child: CircularProgressIndicator())
+                    : _conversationsList(conversationsProvider);
               },
             ),
           ),

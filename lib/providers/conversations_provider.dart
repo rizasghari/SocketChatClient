@@ -6,14 +6,15 @@ import '../utils.dart';
 
 class ConversationsProvider extends ChangeNotifier {
   List<Conversation> _conversations = [];
-
   List<Conversation> get conversations => _conversations;
-  
-  static Logger logger = Logger();
+  bool _isConversationsFetching = true;
+  bool get isConversationsFetching => _isConversationsFetching;
 
   Future<void> fetchConversations(String token) async {
+    await Future.delayed(const Duration(seconds: 2));
     _conversations = await ApiService.fetchConversations(token);
     await Utils.setConversationsMembersListProfilePhotosURl(_conversations);
+    _isConversationsFetching = false;
     notifyListeners();
   }
 
