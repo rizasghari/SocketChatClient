@@ -108,8 +108,25 @@ class ChatProvider extends ChangeNotifier {
     socketChannel.sink.close(status.goingAway);
   }
 
-  void markMessageAsRead(int messageId) {
-    logger.d("markMessageAsRead invoked with messageId:$messageId");
+  void handleSeenMessages(List<int> messageIndexes) {
+    logger.d("handleSeenMessages invoked with messageIndexes:$messageIndexes");
+    for (int index in messageIndexes) {
+      // Check if the index is out of bounds
+      if (index >= _messages.length || index < 0) {
+        continue;
+      }
+      // Ignore own messages
+      if (_messages[index].senderId == currentUserId) {
+        continue;
+      }
+      // Check if the message has already been marked as read
+      if (_messages[index].seenAt != null) {
+        continue;
+      }
+      final message = _messages[index];
+      message.seenAt = DateTime.now();
+      notifyListeners();
+    }
     // notifyListeners();
   }
 

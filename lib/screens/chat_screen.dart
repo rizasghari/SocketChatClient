@@ -82,7 +82,7 @@ class _ChatScreenState extends State<ChatScreen> {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         _chatProvider?.addListener(() {
           if (_chatProvider?.messages.isNotEmpty == true) {
-            _scrollToBottom();
+            // _scrollToBottom();
           }
         });
       });
@@ -238,10 +238,11 @@ class _ChatScreenState extends State<ChatScreen> {
                         },
                       ),
                       onObserve: (resultMap) {
-                        // Prints the first item index that is currently being displayed
-                        logger.i('firstChild.index -- ${resultMap.firstChild!.index}');
-                        // Prints all item indexs those are currently being displayed
-                        logger.i('displaying -- ${resultMap.displayingChildIndexList}');
+                        List<int> seenList = resultMap.displayingChildIndexList;
+                        if (seenList.isEmpty) {
+                          return;
+                        }
+                        chatProvider.handleSeenMessages(seenList);
                       },
                     );
                   },
@@ -326,8 +327,17 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: isMe ? Colors.white60 : Colors.black38,
                         ),
                       ),
-                      isMe ? const SizedBox(width: 5.0) : const SizedBox(width: 0.0),
-                      isMe ? const Icon(Icons.check_circle_outline, size: 16.0, color: Colors.white60) : const SizedBox(width: 0.0),
+                      isMe
+                          ? const SizedBox(width: 5.0)
+                          : const SizedBox(width: 0.0),
+                      isMe
+                          ? Icon(
+                              message.seenAt == null
+                                  ? Icons.check_circle_outline
+                                  : Icons.check_circle,
+                              size: 16.0,
+                              color: Colors.white60)
+                          : const SizedBox(width: 0.0),
                     ],
                   ),
                 ],

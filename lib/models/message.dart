@@ -5,8 +5,8 @@ class Message {
   final int senderId;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final DateTime? seenAt;
   final DateTime? deletedAt;
+  DateTime? seenAt;
 
   Message({
     required this.id,
@@ -26,9 +26,11 @@ class Message {
       conversationId: json['conversation_id'],
       senderId: json['sender_id'],
       createdAt: DateTime.parse(json['CreatedAt']),
-      updatedAt: json['UpdatedAt'] != null ? DateTime.parse(json['UpdatedAt']) : null,
+      updatedAt:
+          json['UpdatedAt'] != null ? DateTime.parse(json['UpdatedAt']) : null,
       seenAt: json['seen_at'] != null ? DateTime.parse(json['seen_at']) : null,
-      deletedAt: json['DeletedAt'] != null ? DateTime.parse(json['DeletedAt']) : null,
+      deletedAt:
+          json['DeletedAt'] != null ? DateTime.parse(json['DeletedAt']) : null,
     );
   }
 }
