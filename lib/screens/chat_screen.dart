@@ -67,6 +67,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _chatProvider = ChatProvider()
       ..initialize(widget.conversation.id, _channel!);
 
+    _chatProvider!.fetchConversationMessages(jwtToken, widget.conversation.id);
+
     // Scroll to bottom on new messages
     _chatProvider?.addListener(() {
       if (_chatProvider?.messages.isNotEmpty == true) {

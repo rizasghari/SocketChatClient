@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:socket_chat_client/models/message.dart';
 import '../models/profile.dart';
 import '../services/local_storage_service.dart';
 import '../models/conversation.dart';
@@ -222,5 +223,25 @@ class ApiService {
       }
     }
     return null;
+  }
+
+  static Future<List<Message>?> fetchConversationMessages(String token, int conversationId) async {
+    final baseUrl = await getBaseUrl();
+    final response = await http.get(
+      Uri.parse('$baseUrl/messages/conversation/$conversationId?page=1&size=500'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      if (responseData['success']) {
+        List<dynamic> data = responseData['data']['messages'];
+        return data.map((json) => Message.fromJson(json)).toList();
+      }
+    }
+    return [];
   }
 }

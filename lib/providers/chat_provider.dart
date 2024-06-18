@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import '../models/message.dart';
+import '../services/api_service.dart';
 
 class ChatProvider extends ChangeNotifier {
   late int conversationId;
@@ -32,6 +33,15 @@ class ChatProvider extends ChangeNotifier {
       }
     };
     socketChannel.sink.add(jsonEncode(message));
+  }
+
+  Future<void> fetchConversationMessages(String jwtToken, int conversationId) async {
+    await Future.delayed(const Duration(seconds: 1));
+    final messages = await ApiService.fetchConversationMessages(jwtToken, conversationId);
+    if (messages != null) {
+      _messages.addAll(messages);
+      notifyListeners();
+    }
   }
 
   @override
