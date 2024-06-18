@@ -82,7 +82,7 @@ class ChatProvider extends ChangeNotifier {
       for (var messageId in seen.messageIds) {
         _messages
             .firstWhere((message) =>
-                message.id == messageId && message.senderId != currentUserId)
+                message.id == messageId && message.senderId == currentUserId)
             .seenAt = DateTime.now();
       }
       notifyListeners();
