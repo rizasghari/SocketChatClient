@@ -283,6 +283,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         if (_controller.text.isNotEmpty) {
                           Provider.of<ChatProvider>(context, listen: false)
                               .sendMessage(_controller.text);
+                          Provider.of<ChatProvider>(context, listen: false)
+                              .setIsTyping(false, _currentUserID);
                           _controller.clear();
                         }
                       },
