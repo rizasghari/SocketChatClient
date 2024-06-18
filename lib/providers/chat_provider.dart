@@ -143,20 +143,23 @@ class ChatProvider extends ChangeNotifier {
   void handleSeenMessages(List<int> messageIndexes) {
     if (messageIndexes.isEmpty) return;
 
-    var filteredList = messageIndexes
-      ..where((n) => n > 0 || n < _messages.length)
-      ..where((n) => _messages[n].senderId != currentUserId)
-      ..where((n) => _messages[n].seenAt == null);
+    logger.d("messageIndexes Before filter: $messageIndexes");
+    messageIndexes.removeWhere((n) => n < 0 || n >= _messages.length);
+    messageIndexes.removeWhere((n) => _messages[n].senderId == currentUserId);
+    messageIndexes.removeWhere((n) => _messages[n].seenAt != null);
+    logger.d("messageIndexes After filter: $messageIndexes");
 
-    if (filteredList.isEmpty) return;
+    if (messageIndexes.isEmpty) return;
 
     List<int> messageIds =
-        filteredList.map((index) => _messages[index].id).toList();
+        messageIndexes.map((index) => _messages[index].id).toList();
+    logger.d("messageIds: $messageIds");
+
     sendMessagesSeenStatusSocketEvent(messageIds);
 
-    for (int index in filteredList) {
-      final message = _messages[index];
-      message.seenAt = DateTime.now();
+    for (int index in messageIndexes) {
+      _messages[index].seenAt == DateTime.now();
+      notifyListeners();
     }
   }
 
