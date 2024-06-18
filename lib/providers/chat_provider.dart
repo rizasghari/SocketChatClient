@@ -17,7 +17,7 @@ class ChatProvider extends ChangeNotifier {
     socketChannel.stream.listen((message) {
       final decodedMessage = Message.fromJson(jsonDecode(message)['payload']);
       if (decodedMessage.conversationId == conversationId) {
-        _messages.add(decodedMessage);
+        _messages.insert(0, decodedMessage);
         notifyListeners();
       }
     });
@@ -50,6 +50,7 @@ class ChatProvider extends ChangeNotifier {
   void reset() {
     _isFetching = true;
     _messages.clear();
+    socketChannel.sink.close(status.goingAway);
   }
 
   @override

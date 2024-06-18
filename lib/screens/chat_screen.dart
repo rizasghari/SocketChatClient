@@ -216,6 +216,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     return ListView.builder(
                       controller: _scrollController,
                       itemCount: chatProvider.messages.length,
+                      reverse: true,
                       itemBuilder: (context, index) {
                         final message = chatProvider.messages[index];
                         final isMe = message.senderId == _currentUserID;
