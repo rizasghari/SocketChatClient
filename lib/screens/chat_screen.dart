@@ -260,10 +260,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             logger.d("Typing: $value");
                             if (value.isNotEmpty) {
                               Provider.of<ChatProvider>(context, listen: false)
-                                  .setIsTyping(true, _currentUserID);
+                                  .sendIsTypingSocketEvent(true, _currentUserID!);
                             } else {
                               Provider.of<ChatProvider>(context, listen: false)
-                                  .setIsTyping(false, _currentUserID);
+                                  .sendIsTypingSocketEvent(false, _currentUserID!);
                             }
                           });
                         },
@@ -279,7 +279,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           Provider.of<ChatProvider>(context, listen: false)
                               .sendMessage(_controller.text);
                           Provider.of<ChatProvider>(context, listen: false)
-                              .setIsTyping(false, _currentUserID);
+                              .sendIsTypingSocketEvent(false, _currentUserID!);
                           _controller.clear();
                         }
                       },

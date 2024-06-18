@@ -6,6 +6,7 @@ import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import '../models/is_typing.dart';
 import '../models/message.dart';
+import '../models/seen.dart';
 import '../services/api_service.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -52,6 +53,9 @@ class ChatProvider extends ChangeNotifier {
         case 'is_typing':
           _handleIsTypingEvent(decodedEvent);
           break;
+        case 'seen_message':
+          _handleSeenEvent(decodedEvent);
+          break;
         default:
           break;
       }
@@ -69,14 +73,42 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  void setIsTyping(bool typingStatus, userId) {
-    logger.d("setIsTyping invoked with typingStatus:$typingStatus and userId:$userId");
+  void _handleSeenEvent(SocketEvent event) {
+    logger.d("event: ${event.payload.toString()}");
+    final seen = Seen.fromJson(event.payload);
+    logger.d("seen: $seen");
+    if (event.conversationId == conversationId) {
+      logger.d("messageIds: ${seen.messageIds}");
+      for (var messageId in seen.messageIds) {
+        _messages
+            .firstWhere((message) =>
+                message.id == messageId && message.senderId != currentUserId)
+            .seenAt = DateTime.now();
+      }
+      notifyListeners();
+    }
+  }
+
+  void sendIsTypingSocketEvent(bool typingStatus, int userId) {
+    logger.d(
+        "sendIsTypingSocketEvent invoked with typingStatus:$typingStatus and userId:$userId");
     final isTypingPayload =
         IsTyping(typingStatus: typingStatus, userId: userId);
     final event = SocketEvent(
         event: "is_typing",
         conversationId: conversationId,
         payload: isTypingPayload.toMap());
+    logger.d("event: $event");
+    socketChannel.sink.add(jsonEncode(event.toMap()));
+  }
+
+  void sendMessagesSeenStatusSocketEvent(List<int> messages) {
+    logger.d("setIsTyping invoked with messages:$messages");
+    final seenPayload = Seen(messageIds: messages);
+    final event = SocketEvent(
+        event: "seen_message",
+        conversationId: conversationId,
+        payload: seenPayload.toMap());
     logger.d("event: $event");
     socketChannel.sink.add(jsonEncode(event.toMap()));
   }
@@ -109,25 +141,23 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void handleSeenMessages(List<int> messageIndexes) {
-    logger.d("handleSeenMessages invoked with messageIndexes:$messageIndexes");
-    for (int index in messageIndexes) {
-      // Check if the index is out of bounds
-      if (index >= _messages.length || index < 0) {
-        continue;
-      }
-      // Ignore own messages
-      if (_messages[index].senderId == currentUserId) {
-        continue;
-      }
-      // Check if the message has already been marked as read
-      if (_messages[index].seenAt != null) {
-        continue;
-      }
+    if (messageIndexes.isEmpty) return;
+
+    var filteredList = messageIndexes
+      ..where((n) => n > 0 || n < _messages.length)
+      ..where((n) => _messages[n].senderId != currentUserId)
+      ..where((n) => _messages[n].seenAt == null);
+
+    if (filteredList.isEmpty) return;
+
+    List<int> messageIds =
+        filteredList.map((index) => _messages[index].id).toList();
+    sendMessagesSeenStatusSocketEvent(messageIds);
+
+    for (int index in filteredList) {
       final message = _messages[index];
       message.seenAt = DateTime.now();
-      notifyListeners();
     }
-    // notifyListeners();
   }
 
   @override
