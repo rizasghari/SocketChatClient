@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../models/conversation.dart';
 import '../models/user.dart';
@@ -24,7 +27,9 @@ class _ChatScreenState extends State<ChatScreen> {
   ChatProvider? _chatProvider;
   int? _currentUserID;
   User? _otherSideUser;
-  late var jwtToken;
+  late String? jwtToken;
+  Timer? _timer;
+  Logger logger = Logger();
 
   @override
   void initState() {
@@ -66,8 +71,9 @@ class _ChatScreenState extends State<ChatScreen> {
       },
     );
 
+    if (!mounted) return;
     _chatProvider = Provider.of<ChatProvider>(context, listen: false)
-      ..initialize(widget.conversation.id, _channel!);
+      ..initialize(widget.conversation.id, _channel!, _currentUserID!);
 
     if (_chatProvider != null) {
       // _chatProvider?.addListener(() {
@@ -77,7 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
       // });
 
       _chatProvider!
-          .fetchConversationMessages(jwtToken, widget.conversation.id);
+          .fetchConversationMessages(jwtToken!, widget.conversation.id);
     }
 
     setState(() {});
@@ -140,7 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   shape: BoxShape.circle,
                 ),
               ),
-              const SizedBox(width: 5.0),
+              const SizedBox(width: 8),
               Text(
                 '${_otherSideUser!.firstName} ${_otherSideUser!.lastName}',
                 style: const TextStyle(
@@ -150,13 +156,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
             ]),
-            const Text(
-              "Is typing...",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.white70,
-              ),
-            ),
+            Provider.of<ChatProvider>(context).otherSideUserIsTyping
+                ? const Text(
+                    "Is typing...",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                    ),
+                  )
+                : Container()
           ],
         ),
       ],
@@ -251,6 +259,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   children: [
                     Expanded(
                       child: TextField(
+                        onChanged: (value) {
+                          if (_timer?.isActive ?? false) _timer?.cancel();
+                          _timer = Timer(const Duration(milliseconds: 500), () {
+                            logger.d("Typing: $value");
+                            if (value.isNotEmpty) {
+                              Provider.of<ChatProvider>(context, listen: false)
+                                  .setIsTyping(true, _currentUserID);
+                            } else {
+                              Provider.of<ChatProvider>(context, listen: false)
+                                  .setIsTyping(false, _currentUserID);
+                            }
+                          });
+                        },
                         controller: _controller,
                         decoration:
                             const InputDecoration(labelText: 'Send a message'),
