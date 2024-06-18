@@ -93,7 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _chatProvider?.clearMessages();
+    _chatProvider?.reset();
     // _chatProvider?.dispose();
     _controller.dispose();
     _scrollController.dispose();
@@ -199,10 +199,17 @@ class _ChatScreenState extends State<ChatScreen> {
               Expanded(
                 child: Consumer<ChatProvider>(
                   builder: (context, chatProvider, child) {
-                    if (chatProvider.messages.isEmpty) {
+                    if (chatProvider.isFetching) {
                       return const Center(
                         child: Center(
                           child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+                    if (chatProvider.messages.isEmpty) {
+                      return const Center(
+                        child: Center(
+                          child: Text("No messages found"),
                         ),
                       );
                     }

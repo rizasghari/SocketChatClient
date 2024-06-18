@@ -9,6 +9,7 @@ class ChatProvider extends ChangeNotifier {
   late int conversationId;
   late IOWebSocketChannel socketChannel;
   final List<Message> _messages = [];
+  bool _isFetching = true;
 
   void initialize(int conversationId, IOWebSocketChannel socketChannel) {
     this.conversationId = conversationId;
@@ -23,6 +24,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   List<Message> get messages => _messages;
+  bool get isFetching => _isFetching;
 
   void sendMessage(String content) {
     final message = {
@@ -38,13 +40,15 @@ class ChatProvider extends ChangeNotifier {
   Future<void> fetchConversationMessages(String jwtToken, int conversationId) async {
     await Future.delayed(const Duration(seconds: 1));
     final messages = await ApiService.fetchConversationMessages(jwtToken, conversationId);
+    _isFetching = false;
     if (messages != null) {
       _messages.addAll(messages);
-      notifyListeners();
     }
+    notifyListeners();
   }
 
-  void clearMessages() {
+  void reset() {
+    _isFetching = true;
     _messages.clear();
   }
 
