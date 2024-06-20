@@ -25,7 +25,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  IOWebSocketChannel? _channel;
+  IOWebSocketChannel? _socketChannel;
 
   ChatProvider? _chatProvider;
   int? _currentUserID;
@@ -65,18 +65,19 @@ class _ChatScreenState extends State<ChatScreen> {
         .then((value) => value == null ? '10.0.2.2' : value.trim());
 
     String socketUrl =
-        'ws://$apiHost:8000/ws?conversationId=${widget.conversation.id}';
-
-    _channel = IOWebSocketChannel.connect(
+        'ws://$apiHost:8000/ws/chat?conversationId=${widget.conversation.id}';
+    _socketChannel = IOWebSocketChannel.connect(
       Uri.parse(socketUrl),
       headers: {
         'Authorization': jwtToken,
       },
     );
+    if (_socketChannel == null) return;
+    await _socketChannel?.ready;
 
     if (!mounted) return;
     _chatProvider = Provider.of<ChatProvider>(context, listen: false)
-      ..initialize(widget.conversation.id, _channel!, _currentUserID!);
+      ..initialize(widget.conversation.id, _socketChannel!, _currentUserID!);
 
     if (_chatProvider != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) {

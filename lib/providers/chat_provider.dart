@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:socket_chat_client/models/socket_event.dart';
+import '../models/socket_event.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import '../models/is_typing.dart';
@@ -165,7 +165,7 @@ class ChatProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    socketChannel.sink.close(status.goingAway);
+    socketChannel.sink.close();
     super.dispose();
   }
 }
