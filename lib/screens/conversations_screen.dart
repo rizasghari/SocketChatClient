@@ -8,6 +8,7 @@ import 'authentication/login_screen.dart';
 import '../services/local_storage_service.dart';
 import '../providers/auth_provider.dart';
 import '../providers/conversations_provider.dart';
+import 'package:web_socket_channel/io.dart';
 import 'chat_screen.dart';
 
 class ConversationsListScreen extends StatefulWidget {
@@ -21,12 +22,12 @@ class ConversationsListScreen extends StatefulWidget {
 }
 
 class _ConversationsListScreenState extends State<ConversationsListScreen> {
-  AuthProvider? _authProvider;
   ConversationsProvider? conversationsProvider;
   int? _currentUserID;
   String? jwtToken;
   bool _isLoading = false;
   int _discoverableUserIndex = -1;
+  IOWebSocketChannel? _socketChannel;
 
   @override
   void initState() {
@@ -35,10 +36,6 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   }
 
   Future<void> _initialize() async {
-    _authProvider = Provider.of<AuthProvider>(context, listen: false);
-    conversationsProvider =
-        Provider.of<ConversationsProvider>(context, listen: false);
-
     jwtToken = await LocalStorage.getString('jwt_token');
     if (jwtToken == null) {
       if (!mounted) return;
@@ -49,18 +46,30 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       );
     }
 
-    if (conversationsProvider != null) {
-      conversationsProvider!.fetchConversations(jwtToken!);
-    }
-
-    _authProvider!.discoverUsers(jwtToken!);
-
     _currentUserID = await LocalStorage.getInt('user_id');
     if (_currentUserID == null) {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
+
+    String? apiHost = await LocalStorage.getString('api_host')
+        .then((value) => value == null ? '10.0.2.2' : value.trim());
+    String socketUrl =
+        'ws://$apiHost:8000/ws/observe?notifiers=$_currentUserID';
+    _socketChannel = IOWebSocketChannel.connect(
+      Uri.parse(socketUrl),
+      headers: {
+        'Authorization': jwtToken,
+      },
+    );
+    if (_socketChannel == null) return;
+    await _socketChannel?.ready;
+
+    if (!mounted) return;
+    conversationsProvider =
+        Provider.of<ConversationsProvider>(context, listen: false)
+    ..initialize(jwtToken!, _socketChannel!);
   }
 
   Future<void> _createConversation(List<int> ids) async {
@@ -70,7 +79,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       _isLoading = false;
     });
     if (conversation != null && mounted) {
-      _authProvider!.discoverableUsers!.removeAt(_discoverableUserIndex);
+      conversationsProvider!.discoverableUsers!.removeAt(_discoverableUserIndex);
       setState(() {
         _discoverableUserIndex = -1;
       });
@@ -124,7 +133,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         children: [
           SizedBox(
             height: 120,
-            child: Consumer<AuthProvider>(
+            child: Consumer<ConversationsProvider>(
               builder: (context, discoverUsersProvider, child) {
                 return discoverUsersProvider.isDiscoverableUsersFetching
                     ? const Center(child: CircularProgressIndicator())
@@ -151,9 +160,9 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   }
 
   Widget _discoverableUsers() {
-    if (_authProvider == null ||
-        _authProvider!.discoverableUsers == null ||
-        _authProvider!.discoverableUsers!.isEmpty) {
+    if (conversationsProvider == null ||
+        conversationsProvider!.discoverableUsers == null ||
+        conversationsProvider!.discoverableUsers!.isEmpty) {
       return _noDiscoverableUsers();
     }
     return _discoverableUsersList();
@@ -168,9 +177,9 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   Widget _discoverableUsersList() {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      itemCount: _authProvider!.discoverableUsers!.length,
+      itemCount: conversationsProvider!.discoverableUsers!.length,
       itemBuilder: (context, index) {
-        final user = _authProvider!.discoverableUsers![index];
+        final user = conversationsProvider!.discoverableUsers![index];
         return GestureDetector(
           onTap: () {
             setState(() {
