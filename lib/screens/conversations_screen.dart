@@ -56,7 +56,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     if (!mounted) return;
     conversationsProvider =
         Provider.of<ConversationsProvider>(context, listen: false)
-          ..initialize(jwtToken!);
+          ..initialize(jwtToken!, _currentUserID!);
   }
 
   Future<void> _createConversation(List<int> ids) async {

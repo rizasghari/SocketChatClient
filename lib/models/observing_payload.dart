@@ -23,4 +23,9 @@ class ObservingPayload {
       lastSeenAt: json['last_seen_at'] != null ? DateTime.parse(json['last_seen_at']) : null,
     );
   }
+
+  @override
+  String toString() {
+    return 'ObservingPayload(userId: $userId, isOnline: $isOnline, lastSeenAt: $lastSeenAt)';
+  }
 }

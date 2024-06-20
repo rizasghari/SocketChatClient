@@ -26,10 +26,14 @@ class ConversationsProvider extends ChangeNotifier {
 
   Logger logger = Logger();
 
-  void initialize(String token) async {
+  late int _currentUserId;
+
+  void initialize(String token, int currentUserId) async {
+    _currentUserId = currentUserId;
     await _fetchPageContent(token);
     logger.i('_fetchPageContent done');
     List<int> notifiers = [];
+    // Add all discoverable users to notifiers
     if (_discoverableUsers != null && _discoverableUsers!.isNotEmpty) {
       logger.i('_discoverableUsers not null');
       for (var notifier in _discoverableUsers!) {
@@ -37,6 +41,15 @@ class ConversationsProvider extends ChangeNotifier {
       }
     } else {
       logger.i('_discoverableUsers null');
+    }
+    // Add all conversation users to notifiers
+    if (_conversations.isNotEmpty) {
+      for (var conversation in _conversations) {
+        for (var user in conversation.members) {
+          if (user.id == _currentUserId) continue;
+          notifiers.add(user.id);
+        }
+      }
     }
     logger.i('notifiers: $notifiers');
     await _initializeWithSocket(token, notifiers);
@@ -77,6 +90,7 @@ class ConversationsProvider extends ChangeNotifier {
 
   void _handleObservingEvent(ObservingEvent event) {
     logger.i("_handleObservingEvent called with event: ${event.toString()}");
+
     notifyListeners();
   }
 

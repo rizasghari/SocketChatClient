@@ -22,4 +22,9 @@ class ObservingEvent {
       payload: ObservingPayload.fromJson(json['payload']),
     );
   }
+
+  @override
+  String toString() {
+    return 'ObservingEvent(event: $event, payload: $payload)';
+  }
 }
