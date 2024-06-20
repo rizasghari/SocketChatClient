@@ -56,7 +56,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     if (!mounted) return;
     conversationsProvider =
         Provider.of<ConversationsProvider>(context, listen: false)
-    ..initialize(jwtToken!);
+          ..initialize(jwtToken!);
   }
 
   Future<void> _createConversation(List<int> ids) async {
@@ -66,7 +66,8 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       _isLoading = false;
     });
     if (conversation != null && mounted) {
-      conversationsProvider!.discoverableUsers!.removeAt(_discoverableUserIndex);
+      conversationsProvider!.discoverableUsers!
+          .removeAt(_discoverableUserIndex);
       setState(() {
         _discoverableUserIndex = -1;
       });
@@ -118,15 +119,12 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       backgroundColor: Colors.blue,
       child: Column(
         children: [
-          SizedBox(
-            height: 120,
-            child: Consumer<ConversationsProvider>(
-              builder: (context, discoverUsersProvider, child) {
-                return discoverUsersProvider.isDiscoverableUsersFetching
-                    ? const Center(child: CircularProgressIndicator())
-                    : _discoverableUsers();
-              },
-            ),
+          Consumer<ConversationsProvider>(
+            builder: (context, discoverUsersProvider, child) {
+              return discoverUsersProvider.isDiscoverableUsersFetching
+                  ? const Center(child: CircularProgressIndicator())
+                  : _discoverableUsers();
+            },
           ),
           Expanded(
             child: Consumer<ConversationsProvider>(
@@ -156,70 +154,71 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   }
 
   Widget _noDiscoverableUsers() {
-    return const Center(
-      child: Text('No new users found.'),
-    );
+    return Container();
   }
 
   Widget _discoverableUsersList() {
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: conversationsProvider!.discoverableUsers!.length,
-      itemBuilder: (context, index) {
-        final user = conversationsProvider!.discoverableUsers![index];
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _discoverableUserIndex = index;
-              _isLoading = true;
-            });
-            _createConversation([user.id, _currentUserID!]);
-          },
-          child: Container(
-            width: 85,
-            margin: const EdgeInsets.all(5.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundImage: user.profilePhoto != null
-                          ? NetworkImage(user.profilePhoto!)
-                          : null,
-                      child: user.profilePhoto == null
-                          ? const Icon(Icons.person)
-                          : null,
-                    ),
-                    _isLoading && _discoverableUserIndex == index
-                        ? _createingConversationIndicator()
-                        : const SizedBox.shrink()
-                  ],
-                ),
-                const SizedBox(height: 5.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: conversationsProvider!.discoverableUsers!.length,
+        itemBuilder: (context, index) {
+          final user = conversationsProvider!.discoverableUsers![index];
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _discoverableUserIndex = index;
+                _isLoading = true;
+              });
+              _createConversation([user.id, _currentUserID!]);
+            },
+            child: Container(
+              width: 85,
+              margin: const EdgeInsets.all(5.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundImage: user.profilePhoto != null
+                            ? NetworkImage(user.profilePhoto!)
+                            : null,
+                        child: user.profilePhoto == null
+                            ? const Icon(Icons.person)
+                            : null,
                       ),
-                    ),
-                    const SizedBox(width: 5.0),
-                    Text(user.firstName,
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ],
-                ),
-              ],
+                      _isLoading && _discoverableUserIndex == index
+                          ? _createingConversationIndicator()
+                          : const SizedBox.shrink()
+                    ],
+                  ),
+                  const SizedBox(height: 5.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 5,
+                        height: 5,
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 5.0),
+                      Text(user.firstName,
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
