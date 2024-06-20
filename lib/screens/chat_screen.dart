@@ -103,16 +103,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _chatProvider?.reset();
-    // _chatProvider?.dispose();
-    _controller.dispose();
-    _scrollController.dispose();
-
-    super.dispose();
-  }
-
   Widget _pageIsLoading() {
     return Scaffold(
       appBar: AppBar(
@@ -353,5 +343,15 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _chatProvider?.reset();
+    // _chatProvider?.dispose();
+    _controller.dispose();
+    _scrollController.dispose();
+
+    super.dispose();
   }
 }

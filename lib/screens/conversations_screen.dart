@@ -53,23 +53,10 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       return;
     }
 
-    String? apiHost = await LocalStorage.getString('api_host')
-        .then((value) => value == null ? '10.0.2.2' : value.trim());
-    String socketUrl =
-        'ws://$apiHost:8000/ws/observe?notifiers=$_currentUserID';
-    _socketChannel = IOWebSocketChannel.connect(
-      Uri.parse(socketUrl),
-      headers: {
-        'Authorization': jwtToken,
-      },
-    );
-    if (_socketChannel == null) return;
-    await _socketChannel?.ready;
-
     if (!mounted) return;
     conversationsProvider =
         Provider.of<ConversationsProvider>(context, listen: false)
-    ..initialize(jwtToken!, _socketChannel!);
+    ..initialize(jwtToken!);
   }
 
   Future<void> _createConversation(List<int> ids) async {

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:web_socket_channel/io.dart';
@@ -7,6 +6,7 @@ import '../models/conversation.dart';
 import '../models/observing_event.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
+import '../services/local_storage_service.dart';
 import '../utils.dart';
 
 class ConversationsProvider extends ChangeNotifier {
@@ -26,10 +26,39 @@ class ConversationsProvider extends ChangeNotifier {
 
   Logger logger = Logger();
 
-  void initialize(String token, IOWebSocketChannel socketChannel) {
-    _socketChannel = socketChannel;
-    _fetchDiscoverableUsers(token);
-    _fetchConversations(token);
+  void initialize(String token) async {
+    await _fetchPageContent(token);
+    logger.i('_fetchPageContent done');
+    List<int> notifiers = [];
+    if (_discoverableUsers != null && _discoverableUsers!.isNotEmpty) {
+      logger.i('_discoverableUsers not null');
+      for (var notifier in _discoverableUsers!) {
+        notifiers.add(notifier.id);
+      }
+    } else {
+      logger.i('_discoverableUsers null');
+    }
+    logger.i('notifiers: $notifiers');
+    await _initializeWithSocket(token, notifiers);
+  }
+
+  Future<void> _fetchPageContent(String token) async {
+    await _fetchDiscoverableUsers(token);
+    await _fetchConversations(token);
+  }
+
+  Future<void> _initializeWithSocket(String jwtToken, List<int> notifiers) async {
+    String? apiHost = await LocalStorage.getString('api_host')
+        .then((value) => value == null ? '10.0.2.2' : value.trim());
+    String socketUrl =
+        'ws://$apiHost:8000/ws/observe?notifiers=${notifiers.join(",")}';
+    _socketChannel = IOWebSocketChannel.connect(
+      Uri.parse(socketUrl),
+      headers: {
+        'Authorization': jwtToken,
+      },
+    );
+    await _socketChannel.ready;
     _handleSocketEvents();
   }
 
@@ -73,11 +102,13 @@ class ConversationsProvider extends ChangeNotifier {
   }
 
   Future<void> _fetchDiscoverableUsers(String token) async {
-    await Future.delayed(const Duration(seconds: 2));
+    logger.i('_fetchDiscoverableUsers called');
     _discoverableUsers = await ApiService.discoverUsers(token);
+    logger.i('_fetchDiscoverableUsers _discoverableUsers fetched');
     await Utils.setUsersListProfilePhotosURl(_discoverableUsers);
     _isDiscoverableUsersFetching = false;
     notifyListeners();
+    return;
   }
 
   @override

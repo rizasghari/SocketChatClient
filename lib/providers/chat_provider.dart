@@ -137,6 +137,7 @@ class ChatProvider extends ChangeNotifier {
     _isFetching = true;
     _messages.clear();
     _otherSideUserIsTyping = false;
+    sendIsTypingSocketEvent(false, currentUserId);
     socketChannel.sink.close(status.goingAway);
   }
 
