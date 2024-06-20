@@ -104,13 +104,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _pageIsLoading() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chat'),
-      ),
-      body: const Center(
-        child: CircularProgressIndicator(),
-      ),
+    return const Center(
+      child: CircularProgressIndicator(),
     );
   }
 
