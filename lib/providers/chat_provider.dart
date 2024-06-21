@@ -29,7 +29,6 @@ class ChatProvider extends ChangeNotifier {
   List<Message> get messages => _messages;
 
   bool get isFetching => _isFetching;
-
   bool get otherSideUserIsTyping => _otherSideUserIsTyping;
 
   void sendMessage(String content) {
@@ -80,10 +79,14 @@ class ChatProvider extends ChangeNotifier {
     if (event.conversationId == conversationId) {
       logger.d("messageIds: ${seen.messageIds}");
       for (var messageId in seen.messageIds) {
-        _messages
-            .firstWhere((message) =>
-                message.id == messageId && message.senderId == currentUserId)
-            .seenAt = DateTime.now();
+        try {
+          _messages
+              .firstWhere((message) =>
+          message.id == messageId && message.senderId == currentUserId)
+              .seenAt = DateTime.now();
+        } catch (e) {
+          logger.d(e);
+        }
       }
       notifyListeners();
     }
@@ -123,7 +126,6 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> fetchConversationMessages(
       String jwtToken, int conversationId) async {
-    await Future.delayed(const Duration(seconds: 1));
     final messages =
         await ApiService.fetchConversationMessages(jwtToken, conversationId);
     _isFetching = false;

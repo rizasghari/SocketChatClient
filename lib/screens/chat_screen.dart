@@ -110,6 +110,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _userProfile() {
+    var isOnline = _otherSideUser?.isOnline ?? false;
+    String? lastSeen;
+    if (_otherSideUser?.lastSeenAt != null) {
+      lastSeen = Utils.getFormattedDate(_otherSideUser!.lastSeenAt!);
+    }
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -132,8 +137,8 @@ class _ChatScreenState extends State<ChatScreen> {
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: Colors.green,
+                decoration: BoxDecoration(
+                  color: isOnline ? Colors.green : Colors.grey,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -147,13 +152,26 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
             ]),
-            Provider.of<ChatProvider>(context).otherSideUserIsTyping
+            !isOnline &&
+                    !Provider.of<ChatProvider>(context).otherSideUserIsTyping &&
+                    lastSeen != null
+                ? Text(
+                    "Last seen at: $lastSeen",
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : Container(),
+            isOnline && Provider.of<ChatProvider>(context).otherSideUserIsTyping
                 ? const Text(
                     "Is typing...",
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.white70,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   )
                 : Container()
           ],
@@ -246,10 +264,12 @@ class _ChatScreenState extends State<ChatScreen> {
                             logger.d("Typing: $value");
                             if (value.isNotEmpty) {
                               Provider.of<ChatProvider>(context, listen: false)
-                                  .sendIsTypingSocketEvent(true, _currentUserID!);
+                                  .sendIsTypingSocketEvent(
+                                      true, _currentUserID!);
                             } else {
                               Provider.of<ChatProvider>(context, listen: false)
-                                  .sendIsTypingSocketEvent(false, _currentUserID!);
+                                  .sendIsTypingSocketEvent(
+                                      false, _currentUserID!);
                             }
                           });
                         },

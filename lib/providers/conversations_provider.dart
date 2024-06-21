@@ -92,9 +92,10 @@ class ConversationsProvider extends ChangeNotifier {
       try {
         _discoverableUsers!
             .firstWhere((user) => user.id == event.payload.userId)
-            .isOnline = event.payload.isOnline;
+            ..isOnline = event.payload.isOnline
+            ..lastSeenAt = event.payload.lastSeenAt;
       } catch (e) {
-        logger.e(e);
+        logger.d(e);
       }
     }
     // Update user online status in conversations list
@@ -103,7 +104,8 @@ class ConversationsProvider extends ChangeNotifier {
         try {
           conversation.members
               .firstWhere((member) => member.id == event.payload.userId)
-              .isOnline = event.payload.isOnline;
+            ..isOnline = event.payload.isOnline
+            ..lastSeenAt = event.payload.lastSeenAt;
         } catch (e) {
           logger.d(e);
         }
