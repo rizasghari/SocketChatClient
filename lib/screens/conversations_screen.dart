@@ -201,10 +201,10 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        width: 5,
-                        height: 5,
-                        decoration: const BoxDecoration(
-                          color: Colors.green,
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: user.isOnline! ? Colors.green : Colors.grey,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -275,6 +275,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       }
     }
     return CircleAvatar(
+      radius: 25,
       backgroundImage: photo != null ? NetworkImage(photo) : null,
       child: photo == null ? const Icon(Icons.person) : null,
     );
@@ -288,9 +289,20 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         break;
       }
     }
-    return Text(
-      title,
-      overflow: TextOverflow.ellipsis,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: Colors.green,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 5.0),
+        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      ],
     );
   }
 }

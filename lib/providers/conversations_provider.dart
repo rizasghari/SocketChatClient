@@ -31,16 +31,12 @@ class ConversationsProvider extends ChangeNotifier {
   void initialize(String token, int currentUserId) async {
     _currentUserId = currentUserId;
     await _fetchPageContent(token);
-    logger.i('_fetchPageContent done');
     List<int> notifiers = [];
     // Add all discoverable users to notifiers
     if (_discoverableUsers != null && _discoverableUsers!.isNotEmpty) {
-      logger.i('_discoverableUsers not null');
       for (var notifier in _discoverableUsers!) {
         notifiers.add(notifier.id);
       }
-    } else {
-      logger.i('_discoverableUsers null');
     }
     // Add all conversation users to notifiers
     if (_conversations.isNotEmpty) {
@@ -60,7 +56,8 @@ class ConversationsProvider extends ChangeNotifier {
     await _fetchConversations(token);
   }
 
-  Future<void> _initializeWithSocket(String jwtToken, List<int> notifiers) async {
+  Future<void> _initializeWithSocket(
+      String jwtToken, List<int> notifiers) async {
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
     String socketUrl =
@@ -90,12 +87,18 @@ class ConversationsProvider extends ChangeNotifier {
 
   void _handleObservingEvent(ObservingEvent event) {
     logger.i("_handleObservingEvent called with event: ${event.toString()}");
-
+    // Update user online status in discoverable users list
+    if (_discoverableUsers != null && _discoverableUsers!.isNotEmpty) {
+      _discoverableUsers!
+          .firstWhere((user) => user.id == event.payload.userId)
+          .isOnline = event.payload.isOnline;
+    }
+    // Update user online status in conversations list
+    // Todo...
     notifyListeners();
   }
 
   Future<void> _fetchConversations(String token) async {
-    await Future.delayed(const Duration(seconds: 2));
     _conversations = await ApiService.fetchConversations(token);
     await Utils.setConversationsMembersListProfilePhotosURl(_conversations);
     _isConversationsFetching = false;
@@ -104,7 +107,6 @@ class ConversationsProvider extends ChangeNotifier {
 
   Future<Conversation?> createConversation(
       String token, List<int> userIds) async {
-    await Future.delayed(const Duration(seconds: 2));
     var conversation = await ApiService.createConversation(token, userIds);
     if (conversation != null) {
       _conversations.add(conversation);

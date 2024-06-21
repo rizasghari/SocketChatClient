@@ -47,5 +47,5 @@ class EnvironmentSelectionPage extends StatelessWidget {
 class EnvironmentConfig {
   static const String webHost = 'localhost';
   static const String androidEmulatorHost = '10.0.2.2';
-  static const String androidDeviceHost = '192.168.1.90';
+  static const String androidDeviceHost = '192.168.1.35';
 }
