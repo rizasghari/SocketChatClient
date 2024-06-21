@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
+import 'package:socket_chat_client/providers/conversations_provider.dart';
 import '../models/conversation.dart';
 import '../models/message.dart';
 import '../models/user.dart';
@@ -14,9 +15,7 @@ import '../utils.dart';
 import 'authentication/login_screen.dart';
 
 class ChatScreen extends StatefulWidget {
-  final Conversation conversation;
-
-  const ChatScreen({super.key, required this.conversation});
+  const ChatScreen({super.key});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -28,6 +27,7 @@ class _ChatScreenState extends State<ChatScreen> {
   IOWebSocketChannel? _socketChannel;
 
   ChatProvider? _chatProvider;
+  ConversationsProvider? _conversationsProvider;
   int? _currentUserID;
   User? _otherSideUser;
   late String? jwtToken;
@@ -52,20 +52,35 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
+    if (!mounted) return;
+    _conversationsProvider =
+        Provider.of<ConversationsProvider>(context, listen: false);
+    if (_conversationsProvider == null || _conversationsProvider!.currentConversationInChat == null) {
+      Navigator.pop(context);
+    }
+
+    _conversationsProvider!.addListener(() {
+      setState(() {
+        _otherSideUser = _conversationsProvider!.currentConversationInChat!.members.firstWhere(
+          (user) => user.id != _currentUserID
+        );
+      });
+    });
+
     _currentUserID = await LocalStorage.getInt('user_id');
     if (_currentUserID == null && mounted) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
 
-    _otherSideUser = widget.conversation.members
+    _otherSideUser = _conversationsProvider!.currentConversationInChat!.members
         .firstWhere((user) => user.id != _currentUserID);
 
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
 
     String socketUrl =
-        'ws://$apiHost:8000/ws/chat?conversationId=${widget.conversation.id}';
+        'ws://$apiHost:8000/ws/chat?conversationId=${_conversationsProvider!.currentConversationInChat!.id}';
     _socketChannel = IOWebSocketChannel.connect(
       Uri.parse(socketUrl),
       headers: {
@@ -77,7 +92,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (!mounted) return;
     _chatProvider = Provider.of<ChatProvider>(context, listen: false)
-      ..initialize(widget.conversation.id, _socketChannel!, _currentUserID!);
+      ..initialize(_conversationsProvider!.currentConversationInChat!.id,
+          _socketChannel!, _currentUserID!);
 
     if (_chatProvider != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -87,11 +103,9 @@ class _ChatScreenState extends State<ChatScreen> {
           }
         });
       });
-
-      _chatProvider!
-          .fetchConversationMessages(jwtToken!, widget.conversation.id);
+      _chatProvider!.fetchConversationMessages(
+          jwtToken!, _conversationsProvider!.currentConversationInChat!.id);
     }
-
     setState(() {});
   }
 
@@ -362,11 +376,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _conversationsProvider?.setCurrentConversationInChat(null, true);
     _chatProvider?.reset();
-    // _chatProvider?.dispose();
     _controller.dispose();
     _scrollController.dispose();
-
+    _timer?.cancel();
     super.dispose();
   }
 }

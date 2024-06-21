@@ -16,7 +16,11 @@ class ConversationsProvider extends ChangeNotifier {
   bool _isConversationsFetching = true;
 
   bool get isConversationsFetching => _isConversationsFetching;
-  late IOWebSocketChannel _socketChannel;
+
+  Conversation? _currentConversationInChat;
+
+  Conversation? get currentConversationInChat => _currentConversationInChat;
+
   List<User>? _discoverableUsers;
 
   List<User>? get discoverableUsers => _discoverableUsers;
@@ -24,9 +28,9 @@ class ConversationsProvider extends ChangeNotifier {
 
   bool get isDiscoverableUsersFetching => _isDiscoverableUsersFetching;
 
-  Logger logger = Logger();
-
   late int _currentUserId;
+  late IOWebSocketChannel _socketChannel;
+  Logger logger = Logger();
 
   void initialize(String token, int currentUserId) async {
     _currentUserId = currentUserId;
@@ -49,6 +53,13 @@ class ConversationsProvider extends ChangeNotifier {
     }
     logger.i('notifiers: $notifiers');
     await _initializeWithSocket(token, notifiers);
+  }
+
+  void setCurrentConversationInChat(Conversation? conversation, bool fromChatScreen) {
+    _currentConversationInChat = conversation;
+    if (!fromChatScreen) {
+      notifyListeners();
+    }
   }
 
   Future<void> _fetchPageContent(String token) async {
@@ -80,6 +91,7 @@ class ConversationsProvider extends ChangeNotifier {
           _handleObservingEvent(decodedEvent);
           break;
         default:
+          logger.i("Unknown event: ${decodedEvent.event}");
           break;
       }
     });
@@ -92,8 +104,9 @@ class ConversationsProvider extends ChangeNotifier {
       try {
         _discoverableUsers!
             .firstWhere((user) => user.id == event.payload.userId)
-            ..isOnline = event.payload.isOnline
-            ..lastSeenAt = event.payload.lastSeenAt;
+          ..isOnline = event.payload.isOnline
+          ..lastSeenAt = event.payload.lastSeenAt;
+        notifyListeners();
       } catch (e) {
         logger.d(e);
       }
@@ -101,17 +114,22 @@ class ConversationsProvider extends ChangeNotifier {
     // Update user online status in conversations list
     if (_conversations.isNotEmpty) {
       for (var conversation in _conversations) {
-        try {
-          conversation.members
-              .firstWhere((member) => member.id == event.payload.userId)
-            ..isOnline = event.payload.isOnline
-            ..lastSeenAt = event.payload.lastSeenAt;
-        } catch (e) {
-          logger.d(e);
+        for (var user in conversation.members) {
+          if (user.id == event.payload.userId) {
+            user.isOnline = event.payload.isOnline;
+            user.lastSeenAt = event.payload.lastSeenAt;
+            if (_currentConversationInChat?.id == conversation.id) {
+              _currentConversationInChat?.members
+                  .firstWhere((member) => member.id == event.payload.userId)
+                ?..isOnline = event.payload.isOnline
+                ..lastSeenAt = event.payload.lastSeenAt;
+            }
+            notifyListeners();
+            break;
+          }
         }
       }
     }
-    notifyListeners();
   }
 
   Future<void> _fetchConversations(String token) async {

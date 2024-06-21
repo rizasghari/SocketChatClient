@@ -1,12 +1,9 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_chat_client/models/conversation.dart';
-import '../utils.dart';
 import 'authentication/login_screen.dart';
 import '../services/local_storage_service.dart';
-import '../providers/auth_provider.dart';
 import '../providers/conversations_provider.dart';
 import 'package:web_socket_channel/io.dart';
 import 'chat_screen.dart';
@@ -71,12 +68,11 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       setState(() {
         _discoverableUserIndex = -1;
       });
+      conversationsProvider!.setCurrentConversationInChat(conversation, false);
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ChatScreen(
-            conversation: conversation,
-          ),
+          builder: (context) => const ChatScreen(),
         ),
       );
     }
@@ -248,10 +244,12 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
           subtitle:
               Text(conversation.members.map((m) => m.firstName).join(', ')),
           onTap: () {
+            conversationsProvider.setCurrentConversationInChat(
+                conversation, false);
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ChatScreen(conversation: conversation),
+                builder: (context) => const ChatScreen(),
               ),
             );
           },
