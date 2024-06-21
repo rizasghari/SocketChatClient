@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             .showSnackBar(const SnackBar(
                           content: Text('Login successful'),
                         ));
-                        Navigator.pushNamed(context, '/conversations');
+                        Navigator.pushReplacementNamed(context, '/conversations');
                       } else {
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context)
@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
             TextButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/signup');
+                Navigator.pushReplacementNamed(context, '/signup');
               },
               child: const Text('Don\'t have an account? Sign Up'),
             ),
