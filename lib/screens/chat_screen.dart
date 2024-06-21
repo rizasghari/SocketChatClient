@@ -55,15 +55,16 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!mounted) return;
     _conversationsProvider =
         Provider.of<ConversationsProvider>(context, listen: false);
-    if (_conversationsProvider == null || _conversationsProvider!.currentConversationInChat == null) {
+    if (_conversationsProvider == null ||
+        _conversationsProvider!.currentConversationInChat == null) {
       Navigator.pop(context);
     }
 
     _conversationsProvider!.addListener(() {
       setState(() {
-        _otherSideUser = _conversationsProvider!.currentConversationInChat!.members.firstWhere(
-          (user) => user.id != _currentUserID
-        );
+        _otherSideUser = _conversationsProvider!
+            .currentConversationInChat!.members
+            .firstWhere((user) => user.id != _currentUserID);
       });
     });
 
@@ -266,8 +267,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   },
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue, Colors.purple],
+                    begin: Alignment.bottomRight,
+                    end: Alignment.topLeft,
+                  ),
+                ),
+                padding: const EdgeInsets.all(8),
                 child: Row(
                   children: [
                     Expanded(
@@ -275,7 +283,6 @@ class _ChatScreenState extends State<ChatScreen> {
                         onChanged: (value) {
                           if (_timer?.isActive ?? false) _timer?.cancel();
                           _timer = Timer(const Duration(milliseconds: 500), () {
-                            logger.d("Typing: $value");
                             if (value.isNotEmpty) {
                               Provider.of<ChatProvider>(context, listen: false)
                                   .sendIsTypingSocketEvent(
@@ -288,12 +295,17 @@ class _ChatScreenState extends State<ChatScreen> {
                           });
                         },
                         controller: _controller,
-                        decoration:
-                            const InputDecoration(labelText: 'Send a message'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                        decoration: const InputDecoration(
+                            labelText: 'Send a message',
+                            labelStyle: TextStyle(color: Colors.white70)),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.send),
+                      icon: const Icon(Icons.send,
+                          color: Colors.white, size: 30.0),
                       onPressed: () {
                         if (_controller.text.isNotEmpty) {
                           Provider.of<ChatProvider>(context, listen: false)

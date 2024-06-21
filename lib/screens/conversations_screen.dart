@@ -85,6 +85,26 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         title: const Text('Conversations'),
       ),
       bottomNavigationBar: _navigationBar(),
+      drawer: const Drawer(
+        child: DrawerHeader(
+          decoration: BoxDecoration(
+            color: Colors.blue,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            height: 100.0,
+            child: Center(
+              child: Text(
+                'Drawer Header',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
       body: _pageContent(),
     );
   }
