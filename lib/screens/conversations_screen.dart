@@ -283,9 +283,11 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
 
   Widget _conversationItemTitle(Conversation conversation) {
     var title = "";
+    var isOnline = false;
     for (var member in conversation.members) {
       if (member.id != _currentUserID) {
         title = "${member.firstName} ${member.lastName}";
+        isOnline = member.isOnline!;
         break;
       }
     }
@@ -295,8 +297,8 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         Container(
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(
-            color: Colors.green,
+          decoration: BoxDecoration(
+            color: isOnline ? Colors.green : Colors.grey,
             shape: BoxShape.circle,
           ),
         ),

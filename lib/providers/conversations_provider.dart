@@ -89,12 +89,26 @@ class ConversationsProvider extends ChangeNotifier {
     logger.i("_handleObservingEvent called with event: ${event.toString()}");
     // Update user online status in discoverable users list
     if (_discoverableUsers != null && _discoverableUsers!.isNotEmpty) {
-      _discoverableUsers!
-          .firstWhere((user) => user.id == event.payload.userId)
-          .isOnline = event.payload.isOnline;
+      try {
+        _discoverableUsers!
+            .firstWhere((user) => user.id == event.payload.userId)
+            .isOnline = event.payload.isOnline;
+      } catch (e) {
+        logger.e(e);
+      }
     }
     // Update user online status in conversations list
-    // Todo...
+    if (_conversations.isNotEmpty) {
+      for (var conversation in _conversations) {
+        try {
+          conversation.members
+              .firstWhere((member) => member.id == event.payload.userId)
+              .isOnline = event.payload.isOnline;
+        } catch (e) {
+          logger.d(e);
+        }
+      }
+    }
     notifyListeners();
   }
 
