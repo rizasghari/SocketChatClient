@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_chat_client/models/conversation.dart';
+import '../models/message.dart';
 import 'authentication/login_screen.dart';
 import '../services/local_storage_service.dart';
 import '../providers/conversations_provider.dart';
@@ -254,15 +255,25 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     if (conversationsProvider.conversations.isEmpty) {
       return _noConversation();
     }
-    return ListView.builder(
+    return ListView.separated(
+      separatorBuilder: (context, index) {
+        return const Divider(
+          thickness: 0.2,
+          height: 1.0,
+          color: Colors.grey,
+          indent: 70.0,
+        );
+      },
       itemCount: conversationsProvider.conversations.length,
       itemBuilder: (context, index) {
         final conversation = conversationsProvider.conversations[index];
         return ListTile(
           leading: _conversationItemUserProfilePhoto(conversation),
           title: _conversationItemTitle(conversation),
-          subtitle:
-              Text(conversation.members.map((m) => m.firstName).join(', ')),
+          subtitle: _conversationItemLastMessage(conversation),
+          trailing: const Text("5 unread"),
+          isThreeLine: false,
+
           onTap: () {
             conversationsProvider.setCurrentConversationInChat(
                 conversation, false);
@@ -296,6 +307,28 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       radius: 25,
       backgroundImage: photo != null ? NetworkImage(photo) : null,
       child: photo == null ? const Icon(Icons.person) : null,
+    );
+  }
+
+  Widget _conversationItemLastMessage(Conversation conversation) {
+    Message? lastMessage = conversation.lastMessage;
+    var lastMessageText = "";
+    Color color = Colors.grey;
+    if (lastMessage == null) {
+      lastMessageText = "Send first message";
+      color = Colors.blueAccent;
+    } else {
+      if (lastMessage.senderId == _currentUserID) {
+        lastMessageText = 'You: ${lastMessage.content}';
+      } else {
+        lastMessageText = lastMessage.content;
+      }
+    }
+    return Text(
+      lastMessageText,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: color, fontSize: 15.0),
     );
   }
 

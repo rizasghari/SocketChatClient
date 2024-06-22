@@ -231,25 +231,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 20.0),
-        FilledButton(
-          onPressed: () {
-            if (_firstNameErrorText == null && _lastNameErrorText == null) {
-              _saveProfile();
-            }
-          },
-          style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.blue)),
-          child: _formEnabled
-              ? const Text('Update')
-              : const SizedBox(
-                  height: 20.0,
-                  width: 20.0,
-                  child: Center(
-                      child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2.0,
-                  )),
-                ),
+        AnimatedOpacity(
+          opacity: _formEnabled ? 1.0 : 0.5,
+          duration: const Duration(milliseconds: 500),
+          child: FilledButton(
+            onPressed: () {
+              if (_firstNameErrorText == null && _lastNameErrorText == null) {
+                _saveProfile();
+              }
+            },
+            style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(Colors.blue)),
+            child: _formEnabled
+                ? const Text('Update')
+                : const SizedBox(
+                    height: 20.0,
+                    width: 20.0,
+                    child: Center(
+                        child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.0,
+                    )),
+                  ),
+          ),
         ),
       ]),
     );
@@ -299,13 +303,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Positioned(
               top: profilePhotoFromTop,
               right: profileHeight * 1.5,
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
                 height: 25,
                 width: 25,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white,
+                  color: _isUploading ? Colors.black : Colors.white,
                 ),
                 child: _isUploading
                     ? const SizedBox(

@@ -61,6 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     _conversationsProvider!.addListener(() {
+      if (!mounted) return;
       setState(() {
         _otherSideUser = _conversationsProvider!
             .currentConversationInChat!.members

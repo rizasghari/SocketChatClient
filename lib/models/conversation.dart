@@ -1,14 +1,17 @@
+import 'message.dart';
 import 'user.dart';
 
 class Conversation {
   final int id;
   final String type;
   final List<User> members;
+  final Message? lastMessage;
 
   Conversation({
     required this.id,
     required this.type,
     required this.members,
+    this.lastMessage,
   });
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
@@ -19,6 +22,9 @@ class Conversation {
       id: json['id'],
       type: json['type'],
       members: membersList,
+      lastMessage: json['last_message'] != null
+          ? Message.fromJson(json['last_message'])
+          : null,
     );
   }
 }

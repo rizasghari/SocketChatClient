@@ -20,11 +20,13 @@ class ProfileProvider extends ChangeNotifier {
   }
 
   Future<String?> uploadProfilePhoto(String token, File file) async {
+    await Future.delayed(const Duration(seconds: 3));
     return await ApiService.uploadProfilePhoto(token, file);
   }
 
   Future<bool> updateProfile(
       String token, String firstName, String lastName) async {
+    await Future.delayed(const Duration(seconds: 3));
     _profile = await ApiService.updateProfile(token, firstName, lastName);
     if (_profile != null) {
       return true;
