@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
@@ -52,6 +53,16 @@ class ConversationsProvider extends ChangeNotifier {
       }
     }
     await _initializeWithSocket(token, notifiers);
+
+    _simulateConversationsUpdating(token);
+  }
+
+  void _simulateConversationsUpdating(String token) {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      logger.d('Simulating conversations updating...');
+      _fetchConversations(token);
+      notifyListeners();
+    });
   }
 
   void setCurrentConversationInChat(Conversation? conversation, bool fromChatScreen) {

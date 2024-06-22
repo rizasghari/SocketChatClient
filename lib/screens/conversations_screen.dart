@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +8,6 @@ import '../models/message.dart';
 import 'authentication/login_screen.dart';
 import '../services/local_storage_service.dart';
 import '../providers/conversations_provider.dart';
-import 'package:web_socket_channel/io.dart';
 import 'chat_screen.dart';
 
 class ConversationsListScreen extends StatefulWidget {
@@ -25,7 +26,6 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   String? jwtToken;
   bool _isLoading = false;
   int _discoverableUserIndex = -1;
-  IOWebSocketChannel? _socketChannel;
 
   @override
   void initState() {
@@ -200,7 +200,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                     alignment: Alignment.center,
                     children: [
                       CircleAvatar(
-                        radius: 35,
+                        radius: 30.0,
                         backgroundImage: user.profilePhoto != null
                             ? NetworkImage(user.profilePhoto!)
                             : null,
@@ -226,8 +226,14 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                         ),
                       ),
                       const SizedBox(width: 5.0),
-                      Text(user.firstName,
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Flexible(
+                        child: Text(
+                          "${user.firstName} ${user.lastName}",
+                          overflow: TextOverflow.fade,
+                          maxLines: 1,
+                          softWrap: false,
+                        ),
+                      )
                     ],
                   ),
                 ],
@@ -273,7 +279,6 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
           subtitle: _conversationItemLastMessage(conversation),
           trailing: const Text("5 unread"),
           isThreeLine: false,
-
           onTap: () {
             conversationsProvider.setCurrentConversationInChat(
                 conversation, false);
@@ -357,5 +362,10 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
