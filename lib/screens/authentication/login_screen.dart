@@ -78,6 +78,12 @@ class _LoginScreenState extends State<LoginScreen> {
               },
               child: const Text('Don\'t have an account? Sign Up'),
             ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/env');
+              },
+              child: const Text('Change Environment'),
+            ),
           ],
         ),
       ),

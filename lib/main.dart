@@ -52,7 +52,7 @@ class ChatApp extends StatelessWidget {
         // initialRoute: initialRoute,
         initialRoute: initialRoute,
         routes: {
-          '/env': (context) => const EnvironmentSelectionPage(),
+          '/env': (context) => EnvironmentSelectionPage(),
           '/conversations': (context) => ConversationsListScreen(),
           '/login': (context) => LoginScreen(from: 'Home Page',),
           '/signup': (context) => const SignupScreen(),

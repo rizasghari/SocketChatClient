@@ -140,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => const EnvironmentSelectionPage(),
+          builder: (context) => EnvironmentSelectionPage(),
         ),
       );
     }
