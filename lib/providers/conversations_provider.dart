@@ -51,7 +51,6 @@ class ConversationsProvider extends ChangeNotifier {
         }
       }
     }
-    logger.i('notifiers: $notifiers');
     await _initializeWithSocket(token, notifiers);
   }
 
@@ -98,7 +97,6 @@ class ConversationsProvider extends ChangeNotifier {
   }
 
   void _handleObservingEvent(ObservingEvent event) {
-    logger.i("_handleObservingEvent called with event: ${event.toString()}");
     // Update user online status in discoverable users list
     if (_discoverableUsers != null && _discoverableUsers!.isNotEmpty) {
       try {

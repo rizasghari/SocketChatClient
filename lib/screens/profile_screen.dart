@@ -293,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               right: 0,
               child: IconButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    logout();
                   },
                   icon: const Icon(Icons.logout, color: Colors.redAccent))),
           Positioned(top: profilePhotoFromTop, child: profilePhoto()),
@@ -329,5 +329,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
               )),
         ]);
+  }
+
+  void logout() async {
+    await Provider.of<ProfileProvider>(context, listen: false).logout();
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(
+        context, '/env', (Route<dynamic> route) => false);
   }
 }
