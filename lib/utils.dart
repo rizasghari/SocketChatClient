@@ -43,4 +43,16 @@ class Utils {
   static String getFormattedDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} - ${date.hour}:${date.minute}';
   }
+
+  static String getConciseFormattedDate(DateTime date) {
+    if (DateTime.now().day == date.day) {
+      return '${date.hour}:${date.minute}';
+    } else if (DateTime.now().day - 1 == date.day) {
+      return 'Yesterday';
+    } else if (DateTime.now().year == date.year) {
+      return '${date.day}/${date.month}';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
 }

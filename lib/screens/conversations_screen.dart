@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_chat_client/models/conversation.dart';
 import '../models/message.dart';
+import '../utils.dart';
 import 'authentication/login_screen.dart';
 import '../services/local_storage_service.dart';
 import '../providers/conversations_provider.dart';
@@ -277,7 +278,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
           leading: _conversationItemUserProfilePhoto(conversation),
           title: _conversationItemTitle(conversation),
           subtitle: _conversationItemLastMessage(conversation),
-          trailing: const Text("5 unread"),
+          trailing: _conversationItemTrailing(conversation),
           isThreeLine: false,
           onTap: () {
             conversationsProvider.setCurrentConversationInChat(
@@ -292,6 +293,39 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         );
       },
     );
+  }
+
+  Widget _conversationItemTrailing(Conversation conversation) {
+    DateTime? lastMessageTime = conversation.lastMessage?.createdAt;
+    var time = lastMessageTime != null
+        ? Utils.getConciseFormattedDate(lastMessageTime)
+        : "";
+    var unread = "99+";
+    if (time.isNotEmpty) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(time),
+          const SizedBox(height: 3.0),
+          Container(
+            width: 25,
+            height: 25,
+            decoration: const BoxDecoration(
+              color: Colors.deepPurpleAccent,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                unread,
+                style: const TextStyle(color: Colors.white, fontSize: 10.0),
+              ),
+            ),
+          )
+        ],
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _noConversation() {
@@ -318,22 +352,42 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   Widget _conversationItemLastMessage(Conversation conversation) {
     Message? lastMessage = conversation.lastMessage;
     var lastMessageText = "";
+    late bool isMe;
     Color color = Colors.grey;
     if (lastMessage == null) {
       lastMessageText = "Send first message";
       color = Colors.blueAccent;
+      isMe = false;
     } else {
       if (lastMessage.senderId == _currentUserID) {
+        isMe = true;
         lastMessageText = 'You: ${lastMessage.content}';
       } else {
+        isMe = false;
         lastMessageText = lastMessage.content;
       }
     }
-    return Text(
-      lastMessageText,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(color: color, fontSize: 15.0),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        lastMessage != null && isMe
+            ? Icon(
+                lastMessage.seenAt == null
+                    ? Icons.check_circle_outline
+                    : Icons.check_circle,
+                size: 16.0,
+                color: Colors.grey)
+            : const SizedBox(width: 0.0),
+        const SizedBox(width: 5.0),
+        Flexible(
+          child: Text(
+            lastMessageText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: color),
+          ),
+        ),
+      ],
     );
   }
 
