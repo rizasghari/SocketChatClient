@@ -193,12 +193,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(children: [
-        Text(_profileProvider?.profile?.email ?? '',
-            style: const TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.w300,
-              color: Colors.grey,
-            )),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Text(_profileProvider?.profile?.email ?? '',
+              style: const TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.w300,
+                color: Colors.grey,
+              )),
+          IconButton(
+              onPressed: () {
+                logout();
+              },
+              icon: const Icon(Icons.logout, color: Colors.grey)),
+        ]),
         const SizedBox(height: 20.0),
         TextField(
           controller: _firstNameController,
@@ -288,18 +295,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Navigator.of(context).pop();
                   },
                   icon: const Icon(Icons.arrow_back, color: Colors.white))),
-          Positioned(
-              top: 0,
-              right: 0,
-              child: IconButton(
-                  onPressed: () {
-                    logout();
-                  },
-                  icon: const Icon(Icons.logout, color: Colors.redAccent))),
           Positioned(top: profilePhotoFromTop, child: profilePhoto()),
           Positioned(
               top: profilePhotoFromTop,
-              right: profileHeight * 1.65,
+              right: profileHeight * 1.5,
               child: Container(
                 height: 25,
                 width: 25,
