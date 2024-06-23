@@ -233,6 +233,11 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                           overflow: TextOverflow.fade,
                           maxLines: 1,
                           softWrap: false,
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.bold,
+                            color: user.isOnline! ? Colors.green : Colors.black,
+                          ),
                         ),
                       )
                     ],
@@ -305,26 +310,32 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.end,
-        verticalDirection: VerticalDirection.up,
         children: [
-          Text(time),
+          Text(
+            time,
+            style: TextStyle(color: Colors.grey[600], fontSize: 10.0),
+          ),
           const SizedBox(height: 3.0),
-          unread != null && unread != "0" ?
-            Container(
-              width: 25,
-              height: 25,
-              decoration: const BoxDecoration(
-                color: Colors.deepPurpleAccent,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  unread,
-                  style: const TextStyle(color: Colors.white, fontSize: 10.0),
+          unread != null && unread != "0"
+              ? Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    color: Colors.deepPurpleAccent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      unread,
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 8.0),
+                    ),
+                  ),
+                )
+              : const SizedBox(
+                  width: 25,
+                  height: 25,
                 ),
-              ),
-            ) : const SizedBox.shrink(),
         ],
       );
     }
@@ -387,7 +398,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
             lastMessageText,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: color),
+            style: TextStyle(color: color, fontSize: 12.0),
           ),
         ),
       ],
@@ -417,7 +428,16 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         ),
         const SizedBox(width: 5.0),
         Flexible(
-            child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis)),
+            child: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        )),
       ],
     );
   }
