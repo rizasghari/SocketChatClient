@@ -169,26 +169,26 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ]),
             !isOnline &&
-                    !Provider.of<ChatProvider>(context).otherSideUserIsTyping &&
-                    lastSeen != null
+                !Provider.of<ChatProvider>(context).otherSideUserIsTyping &&
+                lastSeen != null
                 ? Text(
-                    "Last seen at: $lastSeen",
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.white70,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  )
+              "Last seen at: $lastSeen",
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+              overflow: TextOverflow.ellipsis,
+            )
                 : Container(),
             isOnline && Provider.of<ChatProvider>(context).otherSideUserIsTyping
                 ? const Text(
-                    "Is typing...",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white70,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  )
+              "Is typing...",
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+              overflow: TextOverflow.ellipsis,
+            )
                 : Container()
           ],
         ),
@@ -287,11 +287,11 @@ class _ChatScreenState extends State<ChatScreen> {
                             if (value.isNotEmpty) {
                               Provider.of<ChatProvider>(context, listen: false)
                                   .sendIsTypingSocketEvent(
-                                      true, _currentUserID!);
+                                  true, _currentUserID!);
                             } else {
                               Provider.of<ChatProvider>(context, listen: false)
                                   .sendIsTypingSocketEvent(
-                                      false, _currentUserID!);
+                                  false, _currentUserID!);
                             }
                           });
                         },
@@ -336,18 +336,18 @@ class _ChatScreenState extends State<ChatScreen> {
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Column(
           crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Container(
               padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+              const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
               decoration: BoxDecoration(
                 color: isMe ? Colors.blue : Colors.grey[300],
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: Column(
                 crossAxisAlignment:
-                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   Text(
                     message.content,
@@ -370,11 +370,11 @@ class _ChatScreenState extends State<ChatScreen> {
                           : const SizedBox(width: 0.0),
                       isMe
                           ? Icon(
-                              message.seenAt == null
-                                  ? Icons.check_circle_outline
-                                  : Icons.check_circle,
-                              size: 16.0,
-                              color: Colors.white60)
+                          message.seenAt == null
+                              ? Icons.check_circle_outline
+                              : Icons.check_circle,
+                          size: 16.0,
+                          color: Colors.white60)
                           : const SizedBox(width: 0.0),
                     ],
                   ),

@@ -300,28 +300,31 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     var time = lastMessageTime != null
         ? Utils.getConciseFormattedDate(lastMessageTime)
         : "";
-    var unread = "99+";
+    var unread = conversation.unread?.toString();
     if (time.isNotEmpty) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.end,
+        verticalDirection: VerticalDirection.up,
         children: [
           Text(time),
           const SizedBox(height: 3.0),
-          Container(
-            width: 25,
-            height: 25,
-            decoration: const BoxDecoration(
-              color: Colors.deepPurpleAccent,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                unread,
-                style: const TextStyle(color: Colors.white, fontSize: 10.0),
+          unread != null && unread != "0" ?
+            Container(
+              width: 25,
+              height: 25,
+              decoration: const BoxDecoration(
+                color: Colors.deepPurpleAccent,
+                shape: BoxShape.circle,
               ),
-            ),
-          )
+              child: Center(
+                child: Text(
+                  unread,
+                  style: const TextStyle(color: Colors.white, fontSize: 10.0),
+                ),
+              ),
+            ) : const SizedBox.shrink(),
         ],
       );
     }
@@ -414,7 +417,6 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         ),
         const SizedBox(width: 5.0),
         Flexible(
-
             child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis)),
       ],
     );
