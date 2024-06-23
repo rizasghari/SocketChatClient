@@ -58,7 +58,7 @@ class ConversationsProvider extends ChangeNotifier {
   }
 
   void _simulateConversationsUpdating(String token) {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       logger.d('Simulating conversations updating...');
       _fetchConversations(token);
       notifyListeners();

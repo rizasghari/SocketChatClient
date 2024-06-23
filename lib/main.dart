@@ -14,6 +14,9 @@ import 'screens/profile_screen.dart';
 
 Logger logger = Logger();
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<ScaffoldMessengerState> snackBarKey = GlobalKey<ScaffoldMessengerState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -34,7 +37,9 @@ class ChatApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     logger.i("API Host: $apiHost");
-    var initialRoute = apiHost == null ? '/env' : (jwtToken == null ? '/login' : '/conversations');
+    var initialRoute = apiHost == null
+        ? '/env'
+        : (jwtToken == null ? '/login' : '/conversations');
     logger.i("Initial route: $initialRoute");
     return MultiProvider(
       providers: [
@@ -49,12 +54,15 @@ class ChatApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        // initialRoute: initialRoute,
+        scaffoldMessengerKey: snackBarKey,
         initialRoute: initialRoute,
+        navigatorKey: navigatorKey,
         routes: {
           '/env': (context) => EnvironmentSelectionPage(),
           '/conversations': (context) => ConversationsListScreen(),
-          '/login': (context) => LoginScreen(from: 'Home Page',),
+          '/login': (context) => LoginScreen(
+                from: 'Home Page',
+              ),
           '/signup': (context) => const SignupScreen(),
           '/profile': (context) => const ProfileScreen()
         },

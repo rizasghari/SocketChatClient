@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'main.dart';
 import 'models/conversation.dart';
 import 'models/user.dart';
 import 'services/local_storage_service.dart';
@@ -38,6 +39,11 @@ class Utils {
         content: Text(message),
       ),
     );
+  }
+
+  static void showSnackBarWithoutContext(String message) {
+    final SnackBar snackBar = SnackBar(content: Text(message));
+    snackBarKey.currentState?.showSnackBar(snackBar);
   }
 
   static String getFormattedDate(DateTime date) {

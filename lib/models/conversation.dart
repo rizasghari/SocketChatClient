@@ -6,12 +6,14 @@ class Conversation {
   final String type;
   final List<User> members;
   final Message? lastMessage;
+  final int? unread;
 
   Conversation({
     required this.id,
     required this.type,
     required this.members,
     this.lastMessage,
+    this.unread
   });
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class Conversation {
       lastMessage: json['last_message'] != null
           ? Message.fromJson(json['last_message'])
           : null,
+      unread: json['unread'],
     );
   }
 }

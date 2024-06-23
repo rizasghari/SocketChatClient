@@ -413,7 +413,9 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
           ),
         ),
         const SizedBox(width: 5.0),
-        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        Flexible(
+
+            child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis)),
       ],
     );
   }
