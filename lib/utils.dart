@@ -41,11 +41,6 @@ class Utils {
     );
   }
 
-  static void showSnackBarWithoutContext(String message) {
-    final SnackBar snackBar = SnackBar(content: Text(message));
-    snackBarKey.currentState?.showSnackBar(snackBar);
-  }
-
   static String getFormattedDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} - ${date.hour}:${date.minute}';
   }

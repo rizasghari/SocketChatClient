@@ -54,7 +54,7 @@ class ConversationsProvider extends ChangeNotifier {
     }
     await _initializeWithSocket(token, notifiers);
 
-    _simulateConversationsUpdating(token);
+    // _simulateConversationsUpdating(token);
   }
 
   void _simulateConversationsUpdating(String token) {

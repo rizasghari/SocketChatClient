@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_interceptor/http/intercepted_client.dart';
 import 'package:logger/logger.dart';
@@ -15,7 +14,7 @@ import '../models/user.dart';
 import 'package:path/path.dart' as path;
 
 class ApiService {
-  static InterceptedClient AuthHttpClient =
+  static InterceptedClient authHttpClient =
       InterceptedClient.build(interceptors: [
     AuthInterceptor(),
   ]);
@@ -91,7 +90,7 @@ class ApiService {
 
   static Future<List<Conversation>> fetchConversations(String token) async {
     final baseUrl = await getBaseUrl();
-    final response = await AuthHttpClient.get(
+    final response = await authHttpClient.get(
       Uri.parse('$baseUrl/conversations/my?page=1&size=100'),
       headers: {
         'Content-Type': 'application/json',
@@ -112,7 +111,7 @@ class ApiService {
 
   static Future<List<User>> discoverUsers(String token) async {
     final baseUrl = await getBaseUrl();
-    final response = await AuthHttpClient.get(
+    final response = await authHttpClient.get(
       Uri.parse('$baseUrl/users/discover?page=1&size=100'),
       headers: {
         'Content-Type': 'application/json',
@@ -133,7 +132,7 @@ class ApiService {
 
   static Future<Profile?> fetchProfile(String token) async {
     final baseUrl = await getBaseUrl();
-    final response = await AuthHttpClient.get(
+    final response = await authHttpClient.get(
       Uri.parse('$baseUrl/profile'),
       headers: {
         'Content-Type': 'application/json',
@@ -186,7 +185,7 @@ class ApiService {
   static Future<Profile?> updateProfile(
       String token, String firstName, String lastName) async {
     final baseUrl = await getBaseUrl();
-    final response = await AuthHttpClient.put(
+    final response = await authHttpClient.put(
       Uri.parse('$baseUrl/users'),
       headers: {
         'Content-Type': 'application/json',
@@ -210,7 +209,7 @@ class ApiService {
   static Future<Conversation?> createConversation(
       String token, List<int> users) async {
     final baseUrl = await getBaseUrl();
-    final response = await AuthHttpClient.post(
+    final response = await authHttpClient.post(
       Uri.parse('$baseUrl/conversations'),
       headers: {
         'Content-Type': 'application/json',
@@ -231,7 +230,7 @@ class ApiService {
   static Future<List<Message>?> fetchConversationMessages(
       String token, int conversationId) async {
     final baseUrl = await getBaseUrl();
-    final response = await AuthHttpClient.get(
+    final response = await authHttpClient.get(
       Uri.parse(
           '$baseUrl/messages/conversation/$conversationId?page=1&size=500'),
       headers: {

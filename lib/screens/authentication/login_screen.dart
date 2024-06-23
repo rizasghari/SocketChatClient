@@ -6,9 +6,7 @@ import '../../providers/auth_provider.dart';
 class LoginScreen extends StatefulWidget {
   final String from;
   final Logger logger = Logger();
-  LoginScreen({super.key, required this.from}) {
-    logger.i("LoginScreen from: $from");
-  }
+  LoginScreen({super.key, required this.from});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -88,5 +86,17 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

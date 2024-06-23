@@ -13,9 +13,7 @@ import 'screens/conversations_screen.dart';
 import 'screens/profile_screen.dart';
 
 Logger logger = Logger();
-
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<ScaffoldMessengerState> snackBarKey = GlobalKey<ScaffoldMessengerState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,9 +52,8 @@ class ChatApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        scaffoldMessengerKey: snackBarKey,
-        initialRoute: initialRoute,
         navigatorKey: navigatorKey,
+        initialRoute: initialRoute,
         routes: {
           '/env': (context) => EnvironmentSelectionPage(),
           '/conversations': (context) => ConversationsListScreen(),

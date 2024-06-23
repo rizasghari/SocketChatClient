@@ -78,11 +78,8 @@ class EnvironmentSelectionPage extends StatelessWidget {
   Future<void> _setEnvironment(BuildContext context, String url) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('api_host', url);
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => ChatApp(apiHost: url)),
-      (Route<dynamic> route) => false,
-    );
+    Navigator.pushNamedAndRemoveUntil(
+        context, '/login', (Route<dynamic> route) => false);
   }
 }
 
