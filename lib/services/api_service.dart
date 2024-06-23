@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:http_interceptor/http/intercepted_client.dart';
 import 'package:logger/logger.dart';
+import 'package:socket_chat_client/main.dart';
 import 'package:socket_chat_client/models/message.dart';
 import 'package:socket_chat_client/services/auth_interceptor.dart';
 import '../models/profile.dart';
@@ -89,44 +91,59 @@ class ApiService {
   }
 
   static Future<List<Conversation>> fetchConversations(String token) async {
-    final baseUrl = await getBaseUrl();
-    final response = await authHttpClient.get(
-      Uri.parse('$baseUrl/conversations/my?page=1&size=100'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      if (responseData['success']) {
-        List<dynamic> data = responseData['data']['conversations'];
-        return data.map((json) => Conversation.fromJson(json)).toList();
+    try {
+      final baseUrl = await getBaseUrl();
+      final response = await authHttpClient.get(
+        Uri.parse('$baseUrl/conversations/my?page=1&size=100'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData['success']) {
+          List<dynamic> data = responseData['data']['conversations'];
+          return data.map((json) => Conversation.fromJson(json)).toList();
+        }
+      }
+    } catch (e) {
+      logger.e(e);
+      if (e is ClientException) {
+        LocalStorage.clear();
+        navigatorKey.currentState
+            ?.pushNamedAndRemoveUntil("/env", (route) => false);
       }
     }
-
     return [];
   }
 
   static Future<List<User>> discoverUsers(String token) async {
-    final baseUrl = await getBaseUrl();
-    final response = await authHttpClient.get(
-      Uri.parse('$baseUrl/users/discover?page=1&size=100'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    try {
+      final baseUrl = await getBaseUrl();
+      final response = await authHttpClient.get(
+        Uri.parse('$baseUrl/users/discover?page=1&size=100'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      if (responseData['success']) {
-        List<dynamic> data = responseData['data']['users'];
-        return data.map((json) => User.fromJson(json)).toList();
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData['success']) {
+          List<dynamic> data = responseData['data']['users'];
+          return data.map((json) => User.fromJson(json)).toList();
+        }
+      }
+    } catch (e) {
+      logger.e(e);
+      if (e is ClientException) {
+        LocalStorage.clear();
+        navigatorKey.currentState
+            ?.pushNamedAndRemoveUntil("/env", (route) => false);
       }
     }
-
     return [];
   }
 
