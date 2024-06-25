@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_chat_client/screens/whiteboard_screen.dart';
 import 'providers/chat_provider.dart';
 import 'providers/profile_provider.dart';
 import 'providers/auth_provider.dart';
@@ -61,7 +62,8 @@ class ChatApp extends StatelessWidget {
                 from: 'Home Page',
               ),
           '/signup': (context) => const SignupScreen(),
-          '/profile': (context) => const ProfileScreen()
+          '/profile': (context) => const ProfileScreen(),
+          '/whiteboard': (context) => const WhiteboardScreen(),
         },
       ),
     );

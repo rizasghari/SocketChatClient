@@ -233,10 +233,10 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                           overflow: TextOverflow.fade,
                           maxLines: 1,
                           softWrap: false,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 12.0,
                             fontWeight: FontWeight.bold,
-                            color: user.isOnline! ? Colors.green : Colors.black,
+                            color: Colors.black,
                           ),
                         ),
                       )
