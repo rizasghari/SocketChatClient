@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_chat_client/providers/whiteboard_provider.dart';
 import 'package:socket_chat_client/screens/whiteboard_screen.dart';
 import 'providers/chat_provider.dart';
 import 'providers/profile_provider.dart';
@@ -46,6 +47,7 @@ class ChatApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ConversationsProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => WhiteboardProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
