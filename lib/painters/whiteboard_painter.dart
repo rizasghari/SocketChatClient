@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:socket_chat_client/models/whiteboard/whiteboard_drawer.dart';
+import 'package:socket_chat_client/models/whiteboard/ui/whiteboard_drawer.dart';
 
-import '../models/whiteboard/whiteboard.dart';
+import '../models/whiteboard/ui/whiteboard.dart';
 
 class WhiteboardPainter extends CustomPainter {
   final Whiteboard whiteboard;

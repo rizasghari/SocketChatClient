@@ -1,29 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:socket_chat_client/models/whiteboard/whiteboard.dart';
+import '../models/whiteboard/api/whiteboard_response.dart';
+import '../models/whiteboard/ui/whiteboard.dart';
+import '../models/whiteboard/api/whiteboard_request.dart';
+import '../services/api_service.dart';
 
 class WhiteboardProvider extends ChangeNotifier {
-  late Whiteboard _whiteboard;
+  late WhiteboardResponse _whiteboard;
 
-  void setWhiteboard(Whiteboard whiteboard) {
+  void setWhiteboard(WhiteboardResponse whiteboard) {
     _whiteboard = whiteboard;
     notifyListeners();
   }
 
-  Whiteboard get whiteboard => _whiteboard;
+  WhiteboardResponse get whiteboard => _whiteboard;
 
   void addMySidePoint(Offset? point) {
-    _whiteboard.mySide.points.add(point);
+
     notifyListeners();
   }
 
   void addOtherSidePoint(Offset? point) {
-    _whiteboard.otherSide.points.add(point);
+
     notifyListeners();
   }
 
+  Future<void> createWhiteboard(
+      String token, int conversationId) async {
+    await Future.delayed(const Duration(seconds: 3));
+    var request = WhiteboardRequest(conversationId: conversationId);
+    var whiteboard = await ApiService.createWhiteboard(token, request);
+    if (whiteboard != null) {
+      setWhiteboard(whiteboard);
+      notifyListeners();
+    }
+  }
+
   void clear() {
-    _whiteboard.mySide.points.clear();
-    _whiteboard.otherSide.points.clear();
+
     notifyListeners();
   }
 

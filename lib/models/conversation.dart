@@ -1,3 +1,5 @@
+import 'whiteboard/api/whiteboard_response.dart';
+
 import 'message.dart';
 import 'user.dart';
 
@@ -7,14 +9,15 @@ class Conversation {
   final List<User> members;
   final Message? lastMessage;
   final int? unread;
+  final WhiteboardResponse? whiteboard;
 
-  Conversation({
-    required this.id,
-    required this.type,
-    required this.members,
-    this.lastMessage,
-    this.unread
-  });
+  Conversation(
+      {required this.id,
+      required this.type,
+      required this.members,
+      this.lastMessage,
+      this.unread,
+      this.whiteboard});
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
     var membersJson = json['members'] as List;
@@ -28,6 +31,9 @@ class Conversation {
           ? Message.fromJson(json['last_message'])
           : null,
       unread: json['unread'],
+      whiteboard: json['whiteboard'] != null
+          ? WhiteboardResponse.fromJson(json['whiteboard'])
+          : null,
     );
   }
 }

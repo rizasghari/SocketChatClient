@@ -5,9 +5,11 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:socket_chat_client/providers/conversations_provider.dart';
+import 'package:socket_chat_client/providers/whiteboard_provider.dart';
 import '../models/conversation.dart';
 import '../models/message.dart';
 import '../models/user.dart';
+import '../models/whiteboard/api/whiteboard_response.dart';
 import '../services/local_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/chat_provider.dart';
@@ -24,14 +26,22 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
   IOWebSocketChannel? _socketChannel;
 
   ChatProvider? _chatProvider;
   ConversationsProvider? _conversationsProvider;
+  WhiteboardProvider? _whiteboardProvider;
+
+  WhiteboardResponse? _whiteboard;
+
   int? _currentUserID;
   User? _otherSideUser;
+
   late String? jwtToken;
+
   Timer? _timer;
+
   Logger logger = Logger();
 
   @override
@@ -59,6 +69,8 @@ class _ChatScreenState extends State<ChatScreen> {
         _conversationsProvider!.currentConversationInChat == null) {
       Navigator.pop(context);
     }
+
+    _whiteboard = _conversationsProvider!.currentConversationInChat?.whiteboard;
 
     _conversationsProvider!.addListener(() {
       if (!mounted) return;
@@ -97,6 +109,9 @@ class _ChatScreenState extends State<ChatScreen> {
       ..initialize(_conversationsProvider!.currentConversationInChat!.id,
           _socketChannel!, _currentUserID!);
 
+    _whiteboardProvider =
+        Provider.of<WhiteboardProvider>(context, listen: false);
+
     if (_chatProvider != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         _chatProvider?.addListener(() {
@@ -109,6 +124,24 @@ class _ChatScreenState extends State<ChatScreen> {
           jwtToken!, _conversationsProvider!.currentConversationInChat!.id);
     }
     setState(() {});
+  }
+
+  Future<void> _createWhiteboard() async {
+    if (_whiteboardProvider == null ||
+        _conversationsProvider == null ||
+        _conversationsProvider!.currentConversationInChat == null) return;
+    _showLoadingDialog();
+    await _whiteboardProvider?.createWhiteboard(
+        jwtToken!, _conversationsProvider!.currentConversationInChat!.id);
+    if (mounted) {
+      _closeLoadingDialog();
+      Navigator.pushNamed(context, "/whiteboard");
+    }
+  }
+
+  void _setWhiteboard() {
+    _whiteboardProvider!.setWhiteboard(_whiteboard!);
+    Navigator.pushNamed(context, "/whiteboard");
   }
 
   void _scrollToBottom() {
@@ -196,6 +229,46 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  void _closeLoadingDialog() {
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _showLoadingDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const AlertDialog(
+          title: Text(
+            'Creating whiteboard. Please wait...',
+            style: TextStyle(fontSize: 16.0),
+          ),
+          content: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          ),
+          // actions: <Widget>[
+          //   TextButton(
+          //     child: const Text('Approve'),
+          //     onPressed: () {
+          //       Navigator.of(context).pop();
+          //     },
+          //   ),
+          // ],
+        );
+      },
+    );
+  }
+
   AppBar _appBar() {
     return AppBar(
       title: _userProfile(),
@@ -217,9 +290,17 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.brush, color: Colors.white,),
+          icon: const Icon(
+            Icons.brush,
+            color: Colors.white,
+            size: 18,
+          ),
           onPressed: () {
-            Navigator.pushNamed(context, "/whiteboard");
+            if (_whiteboard == null) {
+              _createWhiteboard();
+            } else {
+              _setWhiteboard();
+            }
           },
         ),
       ],

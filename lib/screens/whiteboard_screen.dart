@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:socket_chat_client/models/whiteboard/whiteboard.dart';
+import 'package:socket_chat_client/models/whiteboard/ui/whiteboard.dart';
 import 'package:socket_chat_client/providers/whiteboard_provider.dart';
 
-import '../models/whiteboard/whiteboard_drawer.dart';
+import '../models/whiteboard/ui/whiteboard_drawer.dart';
 import '../painters/whiteboard_painter.dart';
 
 class WhiteboardScreen extends StatefulWidget {
@@ -20,20 +20,8 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
   @override
   void initState() {
     super.initState();
-    _whiteboard = Whiteboard(
-        mySide: WhiteboardDrawer(
-            paint: Paint()
-              ..strokeWidth = 5.0
-              ..color = Colors.blueAccent
-              ..style = PaintingStyle.stroke,
-            points: []),
-        otherSide: WhiteboardDrawer(
-            paint: Paint()
-              ..strokeWidth = 5.0
-              ..color = Colors.redAccent
-              ..style = PaintingStyle.stroke,
-            points: []));
-    _provider = WhiteboardProvider()..setWhiteboard(_whiteboard);
+    _provider = WhiteboardProvider();
+    //..setWhiteboard();
   }
 
   @override
@@ -42,7 +30,27 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
         value: _provider,
         child: Scaffold(
             appBar: AppBar(
-              title: const Text('Whiteboard'),
+              title: const Text('Live Whiteboard'),
+              flexibleSpace: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue, Colors.purple],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    _provider.clear();
+                  },
+                ),
+              ],
             ),
             body: Consumer<WhiteboardProvider>(
               builder: (context, drawer, child) {
@@ -53,14 +61,14 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
                   onPanEnd: (details) {
                     _provider.addMySidePoint(null);
                   },
-                  child: CustomPaint(
-                    painter:
-                        WhiteboardPainter(whiteboard: _provider.whiteboard),
-                    size: const Size(double.infinity, double.infinity),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints.expand(),
-                    ),
-                  ),
+                  // child: CustomPaint(
+                  //   painter:
+                  //       WhiteboardPainter(whiteboard: _provider.whiteboard),
+                  //   size: const Size(double.infinity, double.infinity),
+                  //   child: ConstrainedBox(
+                  //     constraints: const BoxConstraints.expand(),
+                  //   ),
+                  // ),
                 );
               },
             )));
