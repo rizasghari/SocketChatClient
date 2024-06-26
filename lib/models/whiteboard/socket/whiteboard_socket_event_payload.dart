@@ -3,7 +3,7 @@ import '../api/point.dart';
 class WhiteboardSocketEventPayload {
   int whiteboardId;
   int drawerUserId;
-  List<Point>? points;
+  List<Point?>? points;
 
   WhiteboardSocketEventPayload({required this.whiteboardId, required this.drawerUserId, this.points});
 

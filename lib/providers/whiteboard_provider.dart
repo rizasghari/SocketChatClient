@@ -67,15 +67,15 @@ class WhiteboardProvider extends ChangeNotifier {
     //
   }
 
-  void sendUpdateWhiteboardSocketEvent() {
-    // final payload = WhiteboardSocketEventPayload(
-    //     whiteboardId: _whiteboard!.id,
-    //     drawerUserId: _whiteboard!.drawerUserId!,
-    //     points: _whiteboard!.points);
-    // final event =
-    //     WhiteboardSocketEvent(event: "update_whiteboard", payload: payload);
-    // logger.d("event: $event");
-    // _socketChannel.sink.add(jsonEncode(event.toMap()));
+  void sendUpdateWhiteboardSocketEvent(Drawn drawn) {
+    final payload = WhiteboardSocketEventPayload(
+        whiteboardId: drawn.whiteboardId,
+        drawerUserId: drawn.drawerUserId,
+        points: drawn.points);
+    final event =
+        WhiteboardSocketEvent(event: "update_whiteboard", payload: payload);
+    logger.d("event: $event");
+    _socketChannel.sink.add(jsonEncode(event.toMap()));
   }
 
   void updateMySidePoint(Offset? offset) {
@@ -95,16 +95,18 @@ class WhiteboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _updateMyExistingDrawn(Offset? point) {
-    try {
-      _whiteboard!.drawns!
-          .firstWhere((d) => d.drawerUserId == _currentUserId)
-          .points
-          ?.add(Point.fromOffset(point!));
-    } catch (e) {
-      logger.e(e);
+  void _updateMyExistingDrawn(Offset? offset) {
+    for (var drawn in _whiteboard!.drawns!) {
+      if (drawn.drawerUserId == _currentUserId) {
+        if (offset == null) {
+          drawn.points?.add(null);
+        } else {
+          drawn.points?.add(Point.fromOffset(offset));
+        }
+        // sendUpdateWhiteboardSocketEvent(drawn);
+        break;
+      }
     }
-    // sendUpdateWhiteboardSocketEvent();
   }
 
   void createMyDrawnForFirstTime(Offset? offset) {
@@ -120,6 +122,8 @@ class WhiteboardProvider extends ChangeNotifier {
         drawerUserId: _currentUserId!,
         points: []);
     _whiteboard!.drawns!.add(drawn);
+
+    // sendUpdateWhiteboardSocketEvent(drawn);
   }
 
   void addOtherSidePoint(Offset? point) {

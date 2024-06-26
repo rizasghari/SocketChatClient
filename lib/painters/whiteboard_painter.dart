@@ -31,8 +31,8 @@ class WhiteboardPainter extends CustomPainter {
     if (drawn.points!.isEmpty) return;
     for (int i = 0; i < drawn.points!.length - 1; i++) {
       if (drawn.points?[i] != null && drawn.points?[i + 1] != null) {
-        canvas.drawLine(drawn.points![i].toOffset(),
-            drawn.points![i + 1].toOffset(), paint);
+        canvas.drawLine(drawn.points![i]!.toOffset(),
+            drawn.points![i + 1]!.toOffset(), paint);
       }
     }
   }

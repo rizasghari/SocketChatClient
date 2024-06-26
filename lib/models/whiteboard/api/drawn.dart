@@ -4,7 +4,7 @@ class Drawn {
   final int? id;
   final int whiteboardId;
   final int drawerUserId;
-  List<Point>? points;
+  List<Point?>? points;
 
   Drawn(
       {this.id,
