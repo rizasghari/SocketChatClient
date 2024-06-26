@@ -7,7 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:socket_chat_client/main.dart';
 import 'package:socket_chat_client/models/message.dart';
 import 'package:socket_chat_client/models/whiteboard/api/whiteboard_request.dart';
-import 'package:socket_chat_client/models/whiteboard/api/whiteboard_response.dart';
+import 'package:socket_chat_client/models/whiteboard/api/whiteboard.dart';
 import 'package:socket_chat_client/services/auth_interceptor.dart';
 import '../models/profile.dart';
 import '../services/local_storage_service.dart';
@@ -246,7 +246,7 @@ class ApiService {
     return null;
   }
 
-  static Future<WhiteboardResponse?> createWhiteboard(String token, WhiteboardRequest request) async {
+  static Future<Whiteboard?> createWhiteboard(String token, WhiteboardRequest request) async {
     final baseUrl = await getBaseUrl();
     final response = await authHttpClient.post(
       Uri.parse('$baseUrl/whiteboards'),
@@ -260,7 +260,7 @@ class ApiService {
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
       if (responseData['success']) {
-        return WhiteboardResponse.fromJson(responseData['data']);
+        return Whiteboard.fromJson(responseData['data']);
       }
     }
     return null;

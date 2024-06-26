@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:socket_chat_client/models/whiteboard/ui/whiteboard.dart';
 import 'package:socket_chat_client/providers/whiteboard_provider.dart';
-
-import '../models/whiteboard/ui/whiteboard_drawer.dart';
 import '../painters/whiteboard_painter.dart';
 
 class WhiteboardScreen extends StatefulWidget {
@@ -16,7 +13,6 @@ class WhiteboardScreen extends StatefulWidget {
 
 class _WhiteboardScreenState extends State<WhiteboardScreen> {
   late WhiteboardProvider _provider;
-  late Whiteboard _whiteboard;
 
   var logger = Logger();
 
@@ -59,26 +55,25 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
               builder: (context, drawer, child) {
                 return GestureDetector(
                   onPanUpdate: (details) {
-                    // _provider.addMySidePoint(details.localPosition);
+                    _provider.updateMySidePoint(details.localPosition);
                   },
                   onPanEnd: (details) {
-                    // _provider.addMySidePoint(null);
+                    _provider.updateMySidePoint(null);
                   },
-                  // child: CustomPaint(
-                  //   painter:
-                  //       WhiteboardPainter(whiteboard: _provider.whiteboard),
-                  //   size: const Size(double.infinity, double.infinity),
-                  //   child: ConstrainedBox(
-                  //     constraints: const BoxConstraints.expand(),
-                  //   ),
-                  // ),
+                  child: CustomPaint(
+                    painter:
+                        WhiteboardPainter(whiteboard: _provider.whiteboard!),
+                    size: const Size(double.infinity, double.infinity),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints.expand(),
+                    ),
+                  ),
                 );
               },
             )));
   }
 
   @override
-
   @override
   void dispose() {
     logger.i("WhiteboardScreen disposed");

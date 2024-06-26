@@ -1,4 +1,4 @@
-import 'whiteboard/api/whiteboard_response.dart';
+import 'whiteboard/api/whiteboard.dart';
 
 import 'message.dart';
 import 'user.dart';
@@ -9,7 +9,7 @@ class Conversation {
   final List<User> members;
   final Message? lastMessage;
   final int? unread;
-  WhiteboardResponse? whiteboard;
+  Whiteboard? whiteboard;
 
   Conversation(
       {required this.id,
@@ -32,7 +32,7 @@ class Conversation {
           : null,
       unread: json['unread'],
       whiteboard: json['whiteboard'] != null
-          ? WhiteboardResponse.fromJson(json['whiteboard'])
+          ? Whiteboard.fromJson(json['whiteboard'])
           : null,
     );
   }

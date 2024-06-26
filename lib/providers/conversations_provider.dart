@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:socket_chat_client/models/whiteboard/api/whiteboard_response.dart';
+import 'package:socket_chat_client/models/whiteboard/api/whiteboard.dart';
 import 'package:web_socket_channel/io.dart';
 import '../models/conversation.dart';
 import '../models/observing_event.dart';
@@ -58,7 +58,7 @@ class ConversationsProvider extends ChangeNotifier {
     // _simulateConversationsUpdating(token);
   }
 
-  void setConversationWhiteboard(WhiteboardResponse whiteboard) {
+  void setConversationWhiteboard(Whiteboard whiteboard) {
     logger.d('setConversationWhiteboard: ${whiteboard.id}');
     try {
       _conversations

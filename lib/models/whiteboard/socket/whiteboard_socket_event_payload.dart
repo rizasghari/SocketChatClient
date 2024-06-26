@@ -1,9 +1,9 @@
-import '../api/point_response.dart';
+import '../api/point.dart';
 
 class WhiteboardSocketEventPayload {
   int whiteboardId;
   int drawerUserId;
-  List<PointResponse>? points;
+  List<Point>? points;
 
   WhiteboardSocketEventPayload({required this.whiteboardId, required this.drawerUserId, this.points});
 
@@ -12,7 +12,7 @@ class WhiteboardSocketEventPayload {
       whiteboardId: json['whiteboard_id'],
       drawerUserId: json['drawer_user_id'],
       points: json['points'] != null
-          ? (json['points'] as List).map((i) => PointResponse.fromJson(i)).toList()
+          ? (json['points'] as List).map((i) => Point.fromJson(i)).toList()
           : null,
     );
   }

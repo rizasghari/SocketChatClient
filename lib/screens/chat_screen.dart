@@ -9,7 +9,7 @@ import 'package:socket_chat_client/providers/whiteboard_provider.dart';
 import '../models/conversation.dart';
 import '../models/message.dart';
 import '../models/user.dart';
-import '../models/whiteboard/api/whiteboard_response.dart';
+import '../models/whiteboard/api/whiteboard.dart';
 import '../services/local_storage_service.dart';
 import 'package:web_socket_channel/io.dart';
 import '../providers/chat_provider.dart';
@@ -108,7 +108,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _whiteboardProvider =
         Provider.of<WhiteboardProvider>(context, listen: false);
     if (_conversationsProvider!.currentConversationInChat!.whiteboard != null) {
-      _setWhiteboard(_conversationsProvider!.currentConversationInChat!.whiteboard!);
+      _setWhiteboard(
+          _conversationsProvider!.currentConversationInChat!.whiteboard!);
     }
 
     if (_chatProvider != null) {
@@ -138,8 +139,9 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _setWhiteboard(WhiteboardResponse whiteboard) {
-    _whiteboardProvider!.setWhiteboard(whiteboard: whiteboard);
+  void _setWhiteboard(Whiteboard whiteboard) {
+    _whiteboardProvider!
+        .setWhiteboard(whiteboard: whiteboard, currentUserId: _currentUserID);
   }
 
   void _scrollToBottom() {
@@ -260,11 +262,13 @@ class _ChatScreenState extends State<ChatScreen> {
             size: 18,
           ),
           onPressed: () {
-            if (_whiteboardProvider == null || _whiteboardProvider!.whiteboard == null) {
+            if (_whiteboardProvider == null ||
+                _whiteboardProvider!.whiteboard == null) {
               logger.i("Creating whiteboard");
               _createWhiteboard();
             } else {
-              logger.i("Navigating to whiteboard ${_whiteboardProvider!.whiteboard!.id}");
+              logger.i(
+                  "Navigating to whiteboard ${_whiteboardProvider!.whiteboard!.id}");
               Navigator.pushNamed(context, "/whiteboard");
             }
           },
