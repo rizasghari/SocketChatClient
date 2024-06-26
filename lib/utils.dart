@@ -56,4 +56,38 @@ class Utils {
       return '${date.day}/${date.month}/${date.year}';
     }
   }
+
+  static Future<void> showLoadingDialog(BuildContext context, String title) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 16.0),
+          ),
+          content: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          ),
+          // actions: <Widget>[
+          //   TextButton(
+          //     child: const Text('Approve'),
+          //     onPressed: () {
+          //       Navigator.of(context).pop();
+          //     },
+          //   ),
+          // ],
+        );
+      },
+    );
+  }
 }

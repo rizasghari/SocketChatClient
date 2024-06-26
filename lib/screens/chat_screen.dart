@@ -33,8 +33,6 @@ class _ChatScreenState extends State<ChatScreen> {
   ConversationsProvider? _conversationsProvider;
   WhiteboardProvider? _whiteboardProvider;
 
-  WhiteboardResponse? _whiteboard;
-
   int? _currentUserID;
   User? _otherSideUser;
 
@@ -69,8 +67,6 @@ class _ChatScreenState extends State<ChatScreen> {
         _conversationsProvider!.currentConversationInChat == null) {
       Navigator.pop(context);
     }
-
-    _whiteboard = _conversationsProvider!.currentConversationInChat?.whiteboard;
 
     _conversationsProvider!.addListener(() {
       if (!mounted) return;
@@ -111,6 +107,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _whiteboardProvider =
         Provider.of<WhiteboardProvider>(context, listen: false);
+    if (_conversationsProvider!.currentConversationInChat!.whiteboard != null) {
+      _setWhiteboard(_conversationsProvider!.currentConversationInChat!.whiteboard!);
+    }
 
     if (_chatProvider != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -130,7 +129,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_whiteboardProvider == null ||
         _conversationsProvider == null ||
         _conversationsProvider!.currentConversationInChat == null) return;
-    _showLoadingDialog();
+    Utils.showLoadingDialog(context, "Joining live whiteboard...");
     await _whiteboardProvider?.createWhiteboard(
         jwtToken!, _conversationsProvider!.currentConversationInChat!.id);
     if (mounted) {
@@ -139,9 +138,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _setWhiteboard() {
-    _whiteboardProvider!.setWhiteboard(_whiteboard!);
-    Navigator.pushNamed(context, "/whiteboard");
+  void _setWhiteboard(WhiteboardResponse whiteboard) {
+    _whiteboardProvider!.setWhiteboard(whiteboard: whiteboard);
   }
 
   void _scrollToBottom() {
@@ -235,40 +233,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _showLoadingDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const AlertDialog(
-          title: Text(
-            'Creating whiteboard. Please wait...',
-            style: TextStyle(fontSize: 16.0),
-          ),
-          content: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              SizedBox(
-                width: 30,
-                height: 30,
-                child: CircularProgressIndicator(),
-              ),
-            ],
-          ),
-          // actions: <Widget>[
-          //   TextButton(
-          //     child: const Text('Approve'),
-          //     onPressed: () {
-          //       Navigator.of(context).pop();
-          //     },
-          //   ),
-          // ],
-        );
-      },
-    );
-  }
-
   AppBar _appBar() {
     return AppBar(
       title: _userProfile(),
@@ -296,10 +260,12 @@ class _ChatScreenState extends State<ChatScreen> {
             size: 18,
           ),
           onPressed: () {
-            if (_whiteboard == null) {
+            if (_whiteboardProvider == null || _whiteboardProvider!.whiteboard == null) {
+              logger.i("Creating whiteboard");
               _createWhiteboard();
             } else {
-              _setWhiteboard();
+              logger.i("Navigating to whiteboard ${_whiteboardProvider!.whiteboard!.id}");
+              Navigator.pushNamed(context, "/whiteboard");
             }
           },
         ),
@@ -478,11 +444,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    logger.i("ChatScreen disposed");
     _conversationsProvider?.setCurrentConversationInChat(null, true);
     _chatProvider?.reset();
     _controller.dispose();
     _scrollController.dispose();
     _timer?.cancel();
+    _whiteboardProvider?.clear();
     super.dispose();
   }
 }

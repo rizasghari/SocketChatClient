@@ -140,7 +140,7 @@ class ChatProvider extends ChangeNotifier {
     _messages.clear();
     _otherSideUserIsTyping = false;
     sendIsTypingSocketEvent(false, currentUserId);
-    socketChannel.sink.close(status.goingAway);
+    socketChannel.sink.close();
   }
 
   void handleSeenMessages(List<int> messageIndexes) {

@@ -9,7 +9,7 @@ class Conversation {
   final List<User> members;
   final Message? lastMessage;
   final int? unread;
-  final WhiteboardResponse? whiteboard;
+  WhiteboardResponse? whiteboard;
 
   Conversation(
       {required this.id,

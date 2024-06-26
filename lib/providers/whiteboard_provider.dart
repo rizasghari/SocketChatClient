@@ -1,43 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import '../models/whiteboard/api/whiteboard_response.dart';
 import '../models/whiteboard/ui/whiteboard.dart';
 import '../models/whiteboard/api/whiteboard_request.dart';
 import '../services/api_service.dart';
 
 class WhiteboardProvider extends ChangeNotifier {
-  late WhiteboardResponse _whiteboard;
+  WhiteboardResponse? _whiteboard;
 
-  void setWhiteboard(WhiteboardResponse whiteboard) {
+  var logger = Logger();
+
+  void setWhiteboard({WhiteboardResponse? whiteboard, bool notify = true}) {
     _whiteboard = whiteboard;
-    notifyListeners();
-  }
-
-  WhiteboardResponse get whiteboard => _whiteboard;
-
-  void addMySidePoint(Offset? point) {
-
-    notifyListeners();
-  }
-
-  void addOtherSidePoint(Offset? point) {
-
-    notifyListeners();
-  }
-
-  Future<void> createWhiteboard(
-      String token, int conversationId) async {
-    await Future.delayed(const Duration(seconds: 3));
-    var request = WhiteboardRequest(conversationId: conversationId);
-    var whiteboard = await ApiService.createWhiteboard(token, request);
-    if (whiteboard != null) {
-      setWhiteboard(whiteboard);
+    if (notify) {
       notifyListeners();
     }
   }
 
-  void clear() {
+  WhiteboardResponse? get whiteboard => _whiteboard;
 
+  void addMySidePoint(Offset? point) {
     notifyListeners();
+  }
+
+  void addOtherSidePoint(Offset? point) {
+    notifyListeners();
+  }
+
+  Future<void> createWhiteboard(String token, int conversationId) async {
+    await Future.delayed(const Duration(seconds: 3));
+    var request = WhiteboardRequest(conversationId: conversationId);
+    var whiteboard = await ApiService.createWhiteboard(token, request);
+    if (whiteboard != null) {
+      setWhiteboard(whiteboard: whiteboard);
+    }
+  }
+
+  void clear() {
+    logger.i("clear() / Before clear whiteboard id is: ${_whiteboard?.id}");
+    setWhiteboard(whiteboard: null, notify: false);
+    logger.i("clear() / After clear whiteboard id is: ${_whiteboard?.id}");
   }
 
   @override

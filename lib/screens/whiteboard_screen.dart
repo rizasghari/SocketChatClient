@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_chat_client/models/whiteboard/ui/whiteboard.dart';
 import 'package:socket_chat_client/providers/whiteboard_provider.dart';
@@ -17,10 +18,12 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
   late WhiteboardProvider _provider;
   late Whiteboard _whiteboard;
 
+  var logger = Logger();
+
   @override
   void initState() {
     super.initState();
-    _provider = WhiteboardProvider();
+    _provider = Provider.of<WhiteboardProvider>(context, listen: false);
     //..setWhiteboard();
   }
 
@@ -56,10 +59,10 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
               builder: (context, drawer, child) {
                 return GestureDetector(
                   onPanUpdate: (details) {
-                    _provider.addMySidePoint(details.localPosition);
+                    // _provider.addMySidePoint(details.localPosition);
                   },
                   onPanEnd: (details) {
-                    _provider.addMySidePoint(null);
+                    // _provider.addMySidePoint(null);
                   },
                   // child: CustomPaint(
                   //   painter:
@@ -75,7 +78,10 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
   }
 
   @override
+
+  @override
   void dispose() {
+    logger.i("WhiteboardScreen disposed");
     super.dispose();
   }
 }

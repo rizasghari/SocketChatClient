@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:socket_chat_client/models/conversation.dart';
+import 'package:socket_chat_client/providers/whiteboard_provider.dart';
 import '../models/message.dart';
 import '../utils.dart';
 import 'authentication/login_screen.dart';
@@ -22,7 +23,8 @@ class ConversationsListScreen extends StatefulWidget {
 }
 
 class _ConversationsListScreenState extends State<ConversationsListScreen> {
-  ConversationsProvider? conversationsProvider;
+  ConversationsProvider? _conversationsProvider;
+  WhiteboardProvider? _whiteboardProvider;
   int? _currentUserID;
   String? jwtToken;
   bool _isLoading = false;
@@ -53,24 +55,34 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     }
 
     if (!mounted) return;
-    conversationsProvider =
-        Provider.of<ConversationsProvider>(context, listen: false)
-          ..initialize(jwtToken!, _currentUserID!);
+    _conversationsProvider =
+    Provider.of<ConversationsProvider>(context, listen: false)
+      ..initialize(jwtToken!, _currentUserID!);
+
+    // Update conversation whiteboard if any changes.
+    // It's possible that new whiteboard is created and user joined conversation
+    // so we need to update whiteboard here
+    _whiteboardProvider =
+    Provider.of<WhiteboardProvider>(context, listen: false)
+      ..addListener(() {
+        if (_whiteboardProvider == null || _whiteboardProvider!.whiteboard == null) return;
+        _conversationsProvider?.setConversationWhiteboard(_whiteboardProvider!.whiteboard!);
+      });
   }
 
   Future<void> _createConversation(List<int> ids) async {
     Conversation? conversation =
-        await conversationsProvider!.createConversation(jwtToken!, ids);
+    await _conversationsProvider!.createConversation(jwtToken!, ids);
     setState(() {
       _isLoading = false;
     });
     if (conversation != null && mounted) {
-      conversationsProvider!.discoverableUsers!
+      _conversationsProvider!.discoverableUsers!
           .removeAt(_discoverableUserIndex);
       setState(() {
         _discoverableUserIndex = -1;
       });
-      conversationsProvider!.setCurrentConversationInChat(conversation, false);
+      _conversationsProvider!.setCurrentConversationInChat(conversation, false);
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -163,9 +175,9 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
   }
 
   Widget _discoverableUsers() {
-    if (conversationsProvider == null ||
-        conversationsProvider!.discoverableUsers == null ||
-        conversationsProvider!.discoverableUsers!.isEmpty) {
+    if (_conversationsProvider == null ||
+        _conversationsProvider!.discoverableUsers == null ||
+        _conversationsProvider!.discoverableUsers!.isEmpty) {
       return _noDiscoverableUsers();
     }
     return _discoverableUsersList();
@@ -180,9 +192,9 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       height: 120,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: conversationsProvider!.discoverableUsers!.length,
+        itemCount: _conversationsProvider!.discoverableUsers!.length,
         itemBuilder: (context, index) {
-          final user = conversationsProvider!.discoverableUsers![index];
+          final user = _conversationsProvider!.discoverableUsers![index];
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -318,24 +330,24 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
           const SizedBox(height: 3.0),
           unread != null && unread != "0"
               ? Container(
-                  width: 20,
-                  height: 20,
-                  decoration: const BoxDecoration(
-                    color: Colors.deepPurpleAccent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      unread,
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 8.0),
-                    ),
-                  ),
-                )
+            width: 20,
+            height: 20,
+            decoration: const BoxDecoration(
+              color: Colors.deepPurpleAccent,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                unread,
+                style:
+                const TextStyle(color: Colors.white, fontSize: 8.0),
+              ),
+            ),
+          )
               : const SizedBox(
-                  width: 25,
-                  height: 25,
-                ),
+            width: 25,
+            height: 25,
+          ),
         ],
       );
     }
@@ -386,11 +398,11 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
       children: [
         lastMessage != null && isMe
             ? Icon(
-                lastMessage.seenAt == null
-                    ? Icons.check_circle_outline
-                    : Icons.check_circle,
-                size: 16.0,
-                color: Colors.grey)
+            lastMessage.seenAt == null
+                ? Icons.check_circle_outline
+                : Icons.check_circle,
+            size: 16.0,
+            color: Colors.grey)
             : const SizedBox(width: 0.0),
         const SizedBox(width: 5.0),
         Flexible(
@@ -429,15 +441,16 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
         const SizedBox(width: 5.0),
         Flexible(
             child: Text(
-          title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 14.0,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        )),
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14.0,
+                fontWeight: FontWeight.bold,
+                // color: Colors.black,
+                color: conversation.whiteboard != null ? Colors.blue : Colors.black,
+              ),
+            )),
       ],
     );
   }
