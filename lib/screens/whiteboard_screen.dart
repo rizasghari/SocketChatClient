@@ -55,10 +55,10 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
               builder: (context, drawer, child) {
                 return GestureDetector(
                   onPanUpdate: (details) {
-                    _provider.updateMySidePoint(details.localPosition);
+                    _provider.updateMySidePoints(details.localPosition);
                   },
                   onPanEnd: (details) {
-                    _provider.updateMySidePoint(null);
+                    _provider.updateMySidePoints(null);
                   },
                   child: CustomPaint(
                     painter:

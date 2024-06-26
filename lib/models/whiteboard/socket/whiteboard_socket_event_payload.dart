@@ -5,7 +5,8 @@ class WhiteboardSocketEventPayload {
   int drawerUserId;
   List<Point?>? points;
 
-  WhiteboardSocketEventPayload({required this.whiteboardId, required this.drawerUserId, this.points});
+  WhiteboardSocketEventPayload(
+      {required this.whiteboardId, required this.drawerUserId, this.points});
 
   factory WhiteboardSocketEventPayload.fromJson(Map<String, dynamic> json) {
     return WhiteboardSocketEventPayload(
@@ -21,7 +22,7 @@ class WhiteboardSocketEventPayload {
     return {
       'whiteboard_id': whiteboardId,
       'drawer_user_id': drawerUserId,
-      'points': points
+      'points': points?.map((i) => i?.toMap()).toList(),
     };
   }
 }

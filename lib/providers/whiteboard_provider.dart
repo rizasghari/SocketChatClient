@@ -52,8 +52,10 @@ class WhiteboardProvider extends ChangeNotifier {
   void _handleSocketEvents() {
     _socketChannel.stream.listen((event) {
       final decodedEvent = WhiteboardSocketEvent.fromJson(jsonDecode(event));
+      logger.d("decodedEvent: ${decodedEvent.payload.whiteboardId}");
       switch (decodedEvent.event) {
         case 'update_whiteboard':
+          logger.d("event update_whiteboard");
           _handleUpdateWhiteboardEvent(decodedEvent);
           break;
         default:
@@ -64,7 +66,15 @@ class WhiteboardProvider extends ChangeNotifier {
   }
 
   void _handleUpdateWhiteboardEvent(WhiteboardSocketEvent decodedEvent) {
-    //
+    if (_whiteboard == null &&
+        decodedEvent.payload.drawerUserId == _currentUserId) return;
+    final payload = decodedEvent.payload;
+    final drawn = Drawn(
+      whiteboardId: payload.whiteboardId,
+      drawerUserId: payload.drawerUserId,
+      points: payload.points,
+    );
+    _updateOtherSidePoints(drawn);
   }
 
   void sendUpdateWhiteboardSocketEvent(Drawn drawn) {
@@ -78,7 +88,24 @@ class WhiteboardProvider extends ChangeNotifier {
     _socketChannel.sink.add(jsonEncode(event.toMap()));
   }
 
-  void updateMySidePoint(Offset? offset) {
+  void _updateOtherSidePoints(Drawn drawn) {
+    if (_whiteboard == null) return;
+    if (_whiteboard!.drawns == null || _whiteboard!.drawns!.isEmpty) {
+      createOtherSideDrawnForFirstTime(drawn);
+    } else if (_whiteboard!.drawns!.length == 1) {
+      if (_whiteboard!.drawns![0].drawerUserId != _currentUserId) {
+        _updateOtherSideExistingDrawn(drawn);
+      } else {
+        createOtherSideDrawnForFirstTime(drawn);
+      }
+    } else if (_whiteboard!.drawns!.length > 1) {
+      _updateOtherSideExistingDrawn(drawn);
+    }
+
+    notifyListeners();
+  }
+
+  void updateMySidePoints(Offset? offset) {
     if (_whiteboard == null) return;
     if (_whiteboard!.drawns == null || _whiteboard!.drawns!.isEmpty) {
       createMyDrawnForFirstTime(offset);
@@ -103,7 +130,7 @@ class WhiteboardProvider extends ChangeNotifier {
         } else {
           drawn.points?.add(Point.fromOffset(offset));
         }
-        // sendUpdateWhiteboardSocketEvent(drawn);
+        sendUpdateWhiteboardSocketEvent(drawn);
         break;
       }
     }
@@ -123,11 +150,22 @@ class WhiteboardProvider extends ChangeNotifier {
         points: []);
     _whiteboard!.drawns!.add(drawn);
 
-    // sendUpdateWhiteboardSocketEvent(drawn);
+    sendUpdateWhiteboardSocketEvent(drawn);
   }
 
-  void addOtherSidePoint(Offset? point) {
+  void createOtherSideDrawnForFirstTime(Drawn drawn) {
+    _whiteboard!.drawns = [];
+    _whiteboard!.drawns!.add(drawn);
     notifyListeners();
+  }
+
+  void _updateOtherSideExistingDrawn(Drawn drawn) {
+    for (int i = 0; i < _whiteboard!.drawns!.length; i++) {
+      if (_whiteboard!.drawns![i].drawerUserId != _currentUserId) {
+        _whiteboard!.drawns![i] = drawn;
+        break;
+      }
+    }
   }
 
   Future<void> createWhiteboard(String token, int conversationId) async {

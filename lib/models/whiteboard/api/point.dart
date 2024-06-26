@@ -13,10 +13,12 @@ class Point {
     );
   }
 
-  Map<String, dynamic> toMap() => {
-    'x': x,
-    'y': y,
-  };
+  Map<String, dynamic> toMap() {
+    return {
+      'x': x,
+      'y': y,
+    };
+  }
 
   Offset toOffset() {
     return Offset(x, y);
