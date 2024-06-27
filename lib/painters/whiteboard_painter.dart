@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:socket_chat_client/models/whiteboard/api/drawn.dart';
-import 'package:socket_chat_client/models/whiteboard/api/whiteboard.dart';
+import '../models/whiteboard/api/drawn.dart';
+import '../models/whiteboard/api/point.dart';
+import '../models/whiteboard/api/whiteboard.dart';
 
 class WhiteboardPainter extends CustomPainter {
   final Whiteboard whiteboard;
@@ -30,7 +31,7 @@ class WhiteboardPainter extends CustomPainter {
     logger.i("Drawing ${drawn.points?.length} points");
     if (drawn.points!.isEmpty) return;
     for (int i = 0; i < drawn.points!.length - 1; i++) {
-      if (drawn.points?[i] != null && drawn.points?[i + 1] != null) {
+      if (!drawn.points![i]!.isEndOfSubDrawing() && !drawn.points![i + 1]!.isEndOfSubDrawing()) {
         canvas.drawLine(drawn.points![i]!.toOffset(),
             drawn.points![i + 1]!.toOffset(), paint);
       }

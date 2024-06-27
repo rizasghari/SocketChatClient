@@ -29,4 +29,8 @@ class Point {
   factory Point.fromOffset(Offset offset) {
     return Point(x: offset.dx, y: offset.dy);
   }
+
+  bool isEndOfSubDrawing() {
+    return x == -1 && y == -1;
+  }
 }
