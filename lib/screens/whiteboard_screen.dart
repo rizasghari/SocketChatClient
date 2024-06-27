@@ -86,6 +86,7 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
   @override
   void dispose() {
     logger.i("WhiteboardScreen disposed");
+    _provider.clear();
     super.dispose();
   }
 }

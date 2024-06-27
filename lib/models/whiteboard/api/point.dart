@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 
 class Point {
@@ -8,8 +10,8 @@ class Point {
 
   factory Point.fromJson(Map<String, dynamic> json) {
     return Point(
-      x: json['x'],
-      y: json['y'],
+      x: json['x'].toDouble(),
+      y: json['y'].toDouble(),
     );
   }
 

@@ -130,13 +130,17 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {});
   }
 
-  Future<void> _createWhiteboard() async {
+  Future<void> _createOrGetExistingWhiteboard(int currentUserID) async {
     if (_whiteboardProvider == null ||
         _conversationsProvider == null ||
-        _conversationsProvider!.currentConversationInChat == null) return;
-    Utils.showLoadingDialog(context, "Joining live whiteboard...");
-    await _whiteboardProvider?.createWhiteboard(
-        jwtToken!, _conversationsProvider!.currentConversationInChat!.id);
+        _conversationsProvider!.currentConversationInChat == null ||
+        _otherSideUser == null) return;
+
+    Utils.showLoadingDialog(context,
+        "Joining live whiteboard with ${_otherSideUser!.firstName}...");
+
+    await _whiteboardProvider?.createOrGetExistingWhiteboard(
+        _conversationsProvider!.currentConversationInChat!.id, currentUserID);
     if (mounted) {
       _closeLoadingDialog();
       Navigator.pushNamed(context, "/whiteboard");
@@ -268,10 +272,10 @@ class _ChatScreenState extends State<ChatScreen> {
             size: 18,
           ),
           onPressed: () {
-            if (_whiteboardProvider == null ||
-                _whiteboardProvider!.whiteboard == null) {
-              logger.i("Creating whiteboard");
-              _createWhiteboard();
+            if (_whiteboardProvider!.whiteboard == null &&
+                _currentUserID != null) {
+              logger.i("Creating new whiteboard");
+              _createOrGetExistingWhiteboard(_currentUserID!);
             } else {
               logger.i(
                   "Navigating to whiteboard ${_whiteboardProvider!.whiteboard!.id}");

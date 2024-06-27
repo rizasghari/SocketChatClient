@@ -25,4 +25,10 @@ class WhiteboardSocketEventPayload {
       'points': points?.map((i) => i?.toMap()).toList(),
     };
   }
+
+  @override
+  String toString() {
+    return 'WhiteboardSocketEventPayload(whiteboardId: $whiteboardId, '
+        'drawerUserId: $drawerUserId, points: ${points?.length})';
+  }
 }

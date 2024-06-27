@@ -29,4 +29,9 @@ class Drawn {
         'drawer_user_id': drawerUserId,
         'points': points
       };
+
+  @override
+  String toString() {
+    return 'Drawn(id: $id, whiteboardId: $whiteboardId, drawerUserId: $drawerUserId, points: ${points?.length})';
+  }
 }

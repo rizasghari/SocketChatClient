@@ -20,6 +20,7 @@ class WhiteboardProvider extends ChangeNotifier {
   int? _currentUserId;
 
   IOWebSocketChannel? _socketChannel;
+
   IOWebSocketChannel? get socketChannel => _socketChannel;
 
   var logger = Logger();
@@ -42,16 +43,13 @@ class WhiteboardProvider extends ChangeNotifier {
   Future<void> _initWebSocket() async {
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
-
     String? jwtToken = await LocalStorage.getString('jwt_token');
-
     if (jwtToken == null || apiHost == null || _whiteboard == null) {
       logger.i(
           "Failed to init web socket because jwtToken, apiHost or whiteboard is null\n"
           "jwtToken: $jwtToken\napiHost: $apiHost\nwhiteboard: $_whiteboard");
       return;
     }
-
     String socketUrl = 'ws://$apiHost:8000/ws/whiteboard?id=${_whiteboard!.id}';
     _socketChannel = IOWebSocketChannel.connect(
       Uri.parse(socketUrl),
@@ -73,20 +71,25 @@ class WhiteboardProvider extends ChangeNotifier {
           _handleUpdateWhiteboardEvent(decodedEvent);
           break;
         default:
-          logger.i("Unknown event: ${decodedEvent.event}");
+          logger.i("Unknown whiteboard socket event: ${decodedEvent.event}");
           break;
       }
     });
   }
 
-  void _handleUpdateWhiteboardEvent(WhiteboardSocketEvent decodedEvent) {
-    if (_whiteboard == null &&
-        decodedEvent.payload.drawerUserId == _currentUserId) return;
-    final payload = decodedEvent.payload;
+  void _handleUpdateWhiteboardEvent(WhiteboardSocketEvent event) {
+    logger.d("_handleUpdateWhiteboardEvent / event: ${event.payload.toString()}");
+    logger.d("_handleUpdateWhiteboardEvent / _currentUserId: $_currentUserId");
+    if (event.payload.drawerUserId == _currentUserId) {
+      logger.i("_handleUpdateWhiteboardEvent / Own side update, ignore");
+      return;
+    }
+    logger.d(
+        "_handleUpdateWhiteboardEvent / other side event: ${event.payload.toString()}");
     final drawn = Drawn(
-      whiteboardId: payload.whiteboardId,
-      drawerUserId: payload.drawerUserId,
-      points: payload.points,
+      whiteboardId: event.payload.whiteboardId,
+      drawerUserId: event.payload.drawerUserId,
+      points: event.payload.points,
     );
     _updateOtherSidePoints(drawn);
   }
@@ -99,21 +102,37 @@ class WhiteboardProvider extends ChangeNotifier {
     final event =
         WhiteboardSocketEvent(event: "update_whiteboard", payload: payload);
     logger.d("event: $event");
-    _socketChannel?.sink.add(jsonEncode(event.toMap()));
+
+    if (_socketChannel == null ||
+        _socketChannel?.sink == null ||
+        _socketChannel?.closeCode != null) {
+      logger.e("sendUpdateWhiteboardSocketEvent: Lost connection to socket");
+    } else {
+      _socketChannel?.sink.add(jsonEncode(event.toMap()));
+    }
   }
 
   void _updateOtherSidePoints(Drawn drawn) {
     if (_whiteboard == null) return;
+
+    logger.t("Whiteboard Drawns length: ${_whiteboard?.drawns?.length}");
+
     if (_whiteboard!.drawns == null || _whiteboard!.drawns!.isEmpty) {
-      createOtherSideDrawnForFirstTime(drawn);
+      logger.d("_updateOtherSidePoints C1");
+      _createOtherSideDrawnForFirstTime(drawn);
     } else if (_whiteboard!.drawns!.length == 1) {
       if (_whiteboard!.drawns![0].drawerUserId != _currentUserId) {
+        logger.d("_updateOtherSidePoints C2.1");
         _updateOtherSideExistingDrawn(drawn);
       } else {
-        createOtherSideDrawnForFirstTime(drawn);
+        logger.d("_updateOtherSidePoints C2.2");
+        _createOtherSideDrawnForFirstTime(drawn);
       }
     } else if (_whiteboard!.drawns!.length > 1) {
+      logger.d("_updateOtherSidePoints C3");
       _updateOtherSideExistingDrawn(drawn);
+    } else {
+      logger.d("_updateOtherSidePoints C4");
     }
 
     notifyListeners();
@@ -151,8 +170,11 @@ class WhiteboardProvider extends ChangeNotifier {
   }
 
   void _createMyDrawnForFirstTime(Offset? offset, bool sendEvent) {
-    _whiteboard!.drawns = [];
-    var points = [];
+    if (_whiteboard == null) return;
+    if (_whiteboard!.drawns == null || _whiteboard!.drawns!.isEmpty) {
+      _whiteboard!.drawns = [];
+    }
+    var points = <Point?>[];
     if (offset != null) {
       points.add(Point.fromOffset(offset));
     } else {
@@ -161,33 +183,47 @@ class WhiteboardProvider extends ChangeNotifier {
     var drawn = Drawn(
         whiteboardId: _whiteboard!.id,
         drawerUserId: _currentUserId!,
-        points: []);
+        points: points);
     _whiteboard!.drawns!.add(drawn);
 
     if (sendEvent) sendUpdateWhiteboardSocketEvent(drawn);
   }
 
-  void createOtherSideDrawnForFirstTime(Drawn drawn) {
-    _whiteboard!.drawns = [];
+  void _createOtherSideDrawnForFirstTime(Drawn drawn) {
+    if (_whiteboard == null) return;
+    logger.i("_createOtherSideDrawnForFirstTime / Drawn: ${drawn.toString()}");
+    if (_whiteboard!.drawns == null || _whiteboard!.drawns!.isEmpty) {
+      _whiteboard!.drawns = [];
+    }
     _whiteboard!.drawns!.add(drawn);
+    logger.t("Whiteboard Drawns length: ${_whiteboard?.drawns?.length}");
     notifyListeners();
   }
 
   void _updateOtherSideExistingDrawn(Drawn drawn) {
+    logger.i("_updateOtherSideExistingDrawn / Input Drawn: ${drawn.toString()}");
     for (int i = 0; i < _whiteboard!.drawns!.length; i++) {
-      if (_whiteboard!.drawns![i].drawerUserId != _currentUserId) {
-        _whiteboard!.drawns![i] = drawn;
+      logger.t("Exiting Drawn Item: ${_whiteboard?.drawns![i].toString()}");
+      if (_whiteboard!.drawns![i].drawerUserId == drawn.drawerUserId) {
+        logger.d("_updateOtherSideExistingDrawn");
+        _whiteboard!.drawns![i].points = drawn.points;
         break;
       }
     }
   }
 
-  Future<void> createWhiteboard(String token, int conversationId) async {
-    await Future.delayed(const Duration(seconds: 3));
+  Future<void> createOrGetExistingWhiteboard(
+      int conversationId, currentUserId) async {
+    await Future.delayed(const Duration(seconds: 1));
+    String? jwtToken = await LocalStorage.getString('jwt_token');
+    if (jwtToken == null) {
+      logger.e("createWhiteboard: jwtToken is null");
+      return;
+    }
     var request = WhiteboardRequest(conversationId: conversationId);
-    var whiteboard = await ApiService.createWhiteboard(token, request);
+    var whiteboard = await ApiService.createWhiteboard(jwtToken, request);
     if (whiteboard != null) {
-      setWhiteboard(whiteboard: whiteboard);
+      setWhiteboard(whiteboard: whiteboard, currentUserId: currentUserId);
     }
   }
 
@@ -196,11 +232,12 @@ class WhiteboardProvider extends ChangeNotifier {
     setWhiteboard(whiteboard: null, notify: false);
     logger.i("clear() / After clear whiteboard id is: ${_whiteboard?.id}");
     _socketChannel?.sink.close(1000, "Connection closed");
+    _socketChannel = null;
   }
 
   @override
   void dispose() {
-    _socketChannel?.sink.close(1000, "Connection closed");
+    clear();
     super.dispose();
   }
 }
