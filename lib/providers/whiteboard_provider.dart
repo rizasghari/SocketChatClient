@@ -19,24 +19,38 @@ class WhiteboardProvider extends ChangeNotifier {
 
   int? _currentUserId;
 
-  late IOWebSocketChannel _socketChannel;
+  IOWebSocketChannel? _socketChannel;
+  IOWebSocketChannel? get socketChannel => _socketChannel;
+
   var logger = Logger();
 
   void setWhiteboard(
-      {Whiteboard? whiteboard, int? currentUserId, bool notify = true}) async {
+      {Whiteboard? whiteboard,
+      int? currentUserId,
+      bool notify = true,
+      initSocket = true}) async {
     _whiteboard = whiteboard;
     _currentUserId = currentUserId;
-    if (notify) {
-      notifyListeners();
-    }
-    await _initializeWithSocket();
+    if (notify) notifyListeners();
+    if (initSocket) await _initWebSocket();
   }
 
-  Future<void> _initializeWithSocket() async {
+  Future<void> initWebSocket() async {
+    await _initWebSocket();
+  }
+
+  Future<void> _initWebSocket() async {
     String? apiHost = await LocalStorage.getString('api_host')
         .then((value) => value == null ? '10.0.2.2' : value.trim());
 
     String? jwtToken = await LocalStorage.getString('jwt_token');
+
+    if (jwtToken == null || apiHost == null || _whiteboard == null) {
+      logger.i(
+          "Failed to init web socket because jwtToken, apiHost or whiteboard is null\n"
+          "jwtToken: $jwtToken\napiHost: $apiHost\nwhiteboard: $_whiteboard");
+      return;
+    }
 
     String socketUrl = 'ws://$apiHost:8000/ws/whiteboard?id=${_whiteboard!.id}';
     _socketChannel = IOWebSocketChannel.connect(
@@ -45,12 +59,12 @@ class WhiteboardProvider extends ChangeNotifier {
         'Authorization': jwtToken,
       },
     );
-    await _socketChannel.ready;
+    await _socketChannel?.ready;
     _handleSocketEvents();
   }
 
   void _handleSocketEvents() {
-    _socketChannel.stream.listen((event) {
+    _socketChannel?.stream.listen((event) {
       final decodedEvent = WhiteboardSocketEvent.fromJson(jsonDecode(event));
       logger.d("decodedEvent: ${decodedEvent.payload.whiteboardId}");
       switch (decodedEvent.event) {
@@ -85,7 +99,7 @@ class WhiteboardProvider extends ChangeNotifier {
     final event =
         WhiteboardSocketEvent(event: "update_whiteboard", payload: payload);
     logger.d("event: $event");
-    _socketChannel.sink.add(jsonEncode(event.toMap()));
+    _socketChannel?.sink.add(jsonEncode(event.toMap()));
   }
 
   void _updateOtherSidePoints(Drawn drawn) {
@@ -105,24 +119,24 @@ class WhiteboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateMySidePoints(Offset? offset) {
+  void updateMySidePoints({Offset? offset, bool sendEvent = true}) {
     if (_whiteboard == null) return;
     if (_whiteboard!.drawns == null || _whiteboard!.drawns!.isEmpty) {
-      createMyDrawnForFirstTime(offset);
+      _createMyDrawnForFirstTime(offset, sendEvent);
     } else if (_whiteboard!.drawns!.length == 1) {
       if (_whiteboard!.drawns![0].drawerUserId == _currentUserId) {
-        _updateMyExistingDrawn(offset);
+        _updateMyExistingDrawn(offset, sendEvent);
       } else {
-        createMyDrawnForFirstTime(offset);
+        _createMyDrawnForFirstTime(offset, sendEvent);
       }
     } else if (_whiteboard!.drawns!.length > 1) {
-      _updateMyExistingDrawn(offset);
+      _updateMyExistingDrawn(offset, sendEvent);
     }
 
     notifyListeners();
   }
 
-  void _updateMyExistingDrawn(Offset? offset) {
+  void _updateMyExistingDrawn(Offset? offset, bool sendEvent) {
     for (var drawn in _whiteboard!.drawns!) {
       if (drawn.drawerUserId == _currentUserId) {
         if (offset == null) {
@@ -130,13 +144,13 @@ class WhiteboardProvider extends ChangeNotifier {
         } else {
           drawn.points?.add(Point.fromOffset(offset));
         }
-        sendUpdateWhiteboardSocketEvent(drawn);
+        if (sendEvent) sendUpdateWhiteboardSocketEvent(drawn);
         break;
       }
     }
   }
 
-  void createMyDrawnForFirstTime(Offset? offset) {
+  void _createMyDrawnForFirstTime(Offset? offset, bool sendEvent) {
     _whiteboard!.drawns = [];
     var points = [];
     if (offset != null) {
@@ -150,7 +164,7 @@ class WhiteboardProvider extends ChangeNotifier {
         points: []);
     _whiteboard!.drawns!.add(drawn);
 
-    sendUpdateWhiteboardSocketEvent(drawn);
+    if (sendEvent) sendUpdateWhiteboardSocketEvent(drawn);
   }
 
   void createOtherSideDrawnForFirstTime(Drawn drawn) {
@@ -181,10 +195,12 @@ class WhiteboardProvider extends ChangeNotifier {
     logger.i("clear() / Before clear whiteboard id is: ${_whiteboard?.id}");
     setWhiteboard(whiteboard: null, notify: false);
     logger.i("clear() / After clear whiteboard id is: ${_whiteboard?.id}");
+    _socketChannel?.sink.close(1000, "Connection closed");
   }
 
   @override
   void dispose() {
+    _socketChannel?.sink.close(1000, "Connection closed");
     super.dispose();
   }
 }

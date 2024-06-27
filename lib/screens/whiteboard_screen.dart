@@ -19,8 +19,15 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeAsync();
+  }
+
+  Future<void> _initializeAsync() async {
     _provider = Provider.of<WhiteboardProvider>(context, listen: false);
-    //..setWhiteboard();
+    // Initialize socket if not initialized yet (in create new whiteboard step)
+    if (_provider.socketChannel == null) {
+      await _provider.initWebSocket();
+    }
   }
 
   @override
@@ -55,10 +62,12 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
               builder: (context, drawer, child) {
                 return GestureDetector(
                   onPanUpdate: (details) {
-                    _provider.updateMySidePoints(details.localPosition);
+                    _provider.updateMySidePoints(
+                        offset: details.localPosition, sendEvent: false);
                   },
                   onPanEnd: (details) {
-                    _provider.updateMySidePoints(null);
+                    _provider.updateMySidePoints(
+                        offset: details.localPosition, sendEvent: true);
                   },
                   child: CustomPaint(
                     painter:

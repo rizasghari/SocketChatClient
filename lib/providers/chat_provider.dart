@@ -140,7 +140,7 @@ class ChatProvider extends ChangeNotifier {
     _messages.clear();
     _otherSideUserIsTyping = false;
     sendIsTypingSocketEvent(false, currentUserId);
-    socketChannel.sink.close();
+    socketChannel.sink.close(1000, "Connection closed");
   }
 
   void handleSeenMessages(List<int> messageIndexes) {
@@ -168,7 +168,7 @@ class ChatProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    socketChannel.sink.close();
+    socketChannel.sink.close(1000, "Connection closed");
     super.dispose();
   }
 }

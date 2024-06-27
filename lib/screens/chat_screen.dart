@@ -71,6 +71,10 @@ class _ChatScreenState extends State<ChatScreen> {
     _conversationsProvider!.addListener(() {
       if (!mounted) return;
       setState(() {
+        if (_conversationsProvider == null) {
+          Navigator.pop(context);
+          return;
+        }
         _otherSideUser = _conversationsProvider!
             .currentConversationInChat!.members
             .firstWhere((user) => user.id != _currentUserID);
@@ -140,8 +144,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _setWhiteboard(Whiteboard whiteboard) {
-    _whiteboardProvider!
-        .setWhiteboard(whiteboard: whiteboard, currentUserId: _currentUserID);
+    _whiteboardProvider!.setWhiteboard(
+        whiteboard: whiteboard,
+        currentUserId: _currentUserID,
+        initSocket: false);
   }
 
   void _scrollToBottom() {
