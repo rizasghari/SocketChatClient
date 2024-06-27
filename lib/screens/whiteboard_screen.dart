@@ -35,29 +35,7 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
     return ChangeNotifierProvider<WhiteboardProvider>.value(
         value: _provider,
         child: Scaffold(
-            appBar: AppBar(
-              title: const Text('Live Whiteboard'),
-              flexibleSpace: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue, Colors.purple],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    _provider.clear();
-                  },
-                ),
-              ],
-            ),
+            appBar: _appBar(),
             body: Consumer<WhiteboardProvider>(
               builder: (context, drawer, child) {
                 return GestureDetector(
@@ -80,6 +58,52 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
                 );
               },
             )));
+  }
+
+  AppBar _appBar() {
+    return AppBar(
+      title: _appBarTitle(),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue, Colors.purple],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            // _provider.clear();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _appBarTitle() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Live Whiteboard",
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white)),
+        Text(
+          "With ${_provider.otherSideUser?.firstName} ${_provider.otherSideUser?.lastName}",
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.white70,
+          ),
+        ),
+      ],
+    );
   }
 
   @override

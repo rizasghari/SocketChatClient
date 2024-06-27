@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:socket_chat_client/models/whiteboard/socket/whiteboard_socket_event.dart';
 import 'package:socket_chat_client/models/whiteboard/socket/whiteboard_socket_event_payload.dart';
 import 'package:web_socket_channel/io.dart';
+import '../models/user.dart';
 import '../models/whiteboard/api/drawn.dart';
 import '../models/whiteboard/api/point.dart';
 import '../models/whiteboard/api/whiteboard.dart';
@@ -14,10 +15,12 @@ import '../services/local_storage_service.dart';
 
 class WhiteboardProvider extends ChangeNotifier {
   Whiteboard? _whiteboard;
+  int? _currentUserId;
+  User? _otherSideUser;
 
   Whiteboard? get whiteboard => _whiteboard;
 
-  int? _currentUserId;
+  User? get otherSideUser => _otherSideUser;
 
   IOWebSocketChannel? _socketChannel;
 
@@ -29,9 +32,11 @@ class WhiteboardProvider extends ChangeNotifier {
       {Whiteboard? whiteboard,
       int? currentUserId,
       bool notify = true,
-      initSocket = true}) async {
+      initSocket = true,
+      User? otherSideUser}) async {
     _whiteboard = whiteboard;
     _currentUserId = currentUserId;
+    _otherSideUser = otherSideUser;
     if (notify) notifyListeners();
     if (initSocket) await _initWebSocket();
   }
@@ -78,7 +83,8 @@ class WhiteboardProvider extends ChangeNotifier {
   }
 
   void _handleUpdateWhiteboardEvent(WhiteboardSocketEvent event) {
-    logger.d("_handleUpdateWhiteboardEvent / event: ${event.payload.toString()}");
+    logger
+        .d("_handleUpdateWhiteboardEvent / event: ${event.payload.toString()}");
     logger.d("_handleUpdateWhiteboardEvent / _currentUserId: $_currentUserId");
     if (event.payload.drawerUserId == _currentUserId) {
       logger.i("_handleUpdateWhiteboardEvent / Own side update, ignore");
@@ -201,7 +207,8 @@ class WhiteboardProvider extends ChangeNotifier {
   }
 
   void _updateOtherSideExistingDrawn(Drawn drawn) {
-    logger.i("_updateOtherSideExistingDrawn / Input Drawn: ${drawn.toString()}");
+    logger
+        .i("_updateOtherSideExistingDrawn / Input Drawn: ${drawn.toString()}");
     for (int i = 0; i < _whiteboard!.drawns!.length; i++) {
       logger.t("Exiting Drawn Item: ${_whiteboard?.drawns![i].toString()}");
       if (_whiteboard!.drawns![i].drawerUserId == drawn.drawerUserId) {
@@ -213,7 +220,7 @@ class WhiteboardProvider extends ChangeNotifier {
   }
 
   Future<void> createOrGetExistingWhiteboard(
-      int conversationId, currentUserId) async {
+      int conversationId, currentUserId, User? otherSideUser) async {
     await Future.delayed(const Duration(seconds: 1));
     String? jwtToken = await LocalStorage.getString('jwt_token');
     if (jwtToken == null) {

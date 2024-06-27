@@ -140,7 +140,10 @@ class _ChatScreenState extends State<ChatScreen> {
         "Joining live whiteboard with ${_otherSideUser!.firstName}...");
 
     await _whiteboardProvider?.createOrGetExistingWhiteboard(
-        _conversationsProvider!.currentConversationInChat!.id, currentUserID);
+        _conversationsProvider!.currentConversationInChat!.id,
+        currentUserID,
+        _otherSideUser);
+
     if (mounted) {
       _closeLoadingDialog();
       Navigator.pushNamed(context, "/whiteboard");
@@ -151,6 +154,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _whiteboardProvider!.setWhiteboard(
         whiteboard: whiteboard,
         currentUserId: _currentUserID,
+        otherSideUser: _otherSideUser,
         initSocket: false);
   }
 
