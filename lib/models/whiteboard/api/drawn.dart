@@ -1,13 +1,13 @@
 import 'package:socket_chat_client/models/whiteboard/api/point.dart';
 
 class Drawn {
-  final int? id;
+  final int id;
   final int whiteboardId;
   final int drawerUserId;
   List<Point?>? points;
 
   Drawn(
-      {this.id,
+      {required this.id,
       required this.whiteboardId,
       required this.drawerUserId,
       this.points});

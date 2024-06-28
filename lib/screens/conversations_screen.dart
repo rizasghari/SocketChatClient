@@ -64,10 +64,10 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
     // so we need to update whiteboard here
     _whiteboardProvider =
     Provider.of<WhiteboardProvider>(context, listen: false)
-      ..addListener(() {
+      ..whiteboardChanged = (whiteboard) {
         if (_whiteboardProvider == null || _whiteboardProvider!.whiteboard == null) return;
-        _conversationsProvider?.setConversationWhiteboard(_whiteboardProvider!.whiteboard!);
-      });
+        _conversationsProvider?.setConversationWhiteboard(whiteboard);
+      };
   }
 
   Future<void> _createConversation(List<int> ids) async {

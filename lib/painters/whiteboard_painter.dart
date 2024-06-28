@@ -20,6 +20,8 @@ class WhiteboardPainter extends CustomPainter {
   }
 
   void _draw(Canvas canvas, Size size, Drawn drawn) {
+    if (drawn.points == null || drawn.points!.isEmpty) return;
+
     Paint paint = Paint()
       ..color = Colors.cyan
       ..strokeCap = StrokeCap.round
@@ -29,7 +31,6 @@ class WhiteboardPainter extends CustomPainter {
       ..isAntiAlias = true;
 
     logger.i("Drawing ${drawn.points?.length} points");
-    if (drawn.points!.isEmpty) return;
     for (int i = 0; i < drawn.points!.length - 1; i++) {
       if (!drawn.points![i]!.isEndOfSubDrawing() && !drawn.points![i + 1]!.isEndOfSubDrawing()) {
         canvas.drawLine(drawn.points![i]!.toOffset(),
