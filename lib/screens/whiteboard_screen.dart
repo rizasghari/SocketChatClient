@@ -44,8 +44,7 @@ class _WhiteboardScreenState extends State<WhiteboardScreen> {
                         offset: details.localPosition, sendEvent: false);
                   },
                   onPanEnd: (details) {
-                    _provider.updateMySidePoints(
-                        offset: const Offset(-1, -1), sendEvent: true);
+                    _provider.updateMySidePoints(sendEvent: true);
                   },
                   child: CustomPaint(
                     painter:

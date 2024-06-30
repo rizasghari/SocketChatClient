@@ -27,7 +27,7 @@ class DrawingPaint {
   factory DrawingPaint.fromJson(Map<String, dynamic> json) {
     return DrawingPaint(
         color: json['color'],
-        strokeWidth: json['stroke_width'],
+        strokeWidth: json['stroke_width'].toDouble(),
         paintingStyle: json['painting_style'],
         strokeCap: json['stroke_cap'],
         strokeJoin: json['stroke_join'],
