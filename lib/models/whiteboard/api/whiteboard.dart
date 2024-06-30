@@ -4,29 +4,27 @@ class Whiteboard {
   final int id;
   final int conversationId;
   final int creatorUserId;
-  List<Drawn>? drawns;
+  List<Drawn> drawns;
 
   Whiteboard(
       {required this.id,
       required this.conversationId,
       required this.creatorUserId,
-      this.drawns});
+      required this.drawns});
 
   factory Whiteboard.fromJson(Map<String, dynamic> json) {
     return Whiteboard(
-      id: json['ID'],
-      conversationId: json['conversation_id'],
-      creatorUserId: json['creator_user_id'],
-      drawns: json['drawns'] != null
-          ? (json['drawns'] as List).map((i) => Drawn.fromJson(i)).toList()
-          : null,
-    );
+        id: json['ID'],
+        conversationId: json['conversation_id'],
+        creatorUserId: json['creator_user_id'],
+        drawns:
+            (json['drawns'] as List).map((i) => Drawn.fromJson(i)).toList());
   }
 
   Map<String, dynamic> toMap() => {
-    'ID': id,
-    'conversation_id': conversationId,
-    'creator_user_id': creatorUserId,
-    'drawns': drawns
-  };
+        'ID': id,
+        'conversation_id': conversationId,
+        'creator_user_id': creatorUserId,
+        'drawns': drawns
+      };
 }

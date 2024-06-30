@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import '../models/whiteboard/api/drawn.dart';
-import '../models/whiteboard/api/point.dart';
 import '../models/whiteboard/api/whiteboard.dart';
 
 class WhiteboardPainter extends CustomPainter {
@@ -10,6 +9,16 @@ class WhiteboardPainter extends CustomPainter {
   WhiteboardPainter({required this.whiteboard});
 
   Logger logger = Logger();
+
+  Paint defaultPaint = Paint()
+    ..color = Colors.orange
+    ..strokeCap = StrokeCap.butt
+    ..strokeJoin = StrokeJoin.miter
+    ..style = PaintingStyle.fill
+    ..strokeWidth = 5.0
+    ..filterQuality = FilterQuality.none
+    ..blendMode = BlendMode.srcOver
+    ..isAntiAlias = true;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -20,21 +29,22 @@ class WhiteboardPainter extends CustomPainter {
   }
 
   void _draw(Canvas canvas, Size size, Drawn drawn) {
-    if (drawn.points == null || drawn.points!.isEmpty) return;
-
-    Paint paint = Paint()
-      ..color = Colors.cyan
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5.0
-      ..isAntiAlias = true;
-
-    logger.i("Drawing ${drawn.points?.length} points");
-    for (int i = 0; i < drawn.points!.length - 1; i++) {
-      if (!drawn.points![i]!.isEndOfSubDrawing() && !drawn.points![i + 1]!.isEndOfSubDrawing()) {
-        canvas.drawLine(drawn.points![i]!.toOffset(),
-            drawn.points![i + 1]!.toOffset(), paint);
+    if (drawn.subDrawns == null || drawn.subDrawns!.isEmpty) {
+      logger.i("Skipping drawing ${drawn.id} subDrawns due to empty list");
+      return;
+    }
+    logger.i("Drawing ${drawn.subDrawns?.length} subDrawns");
+    for (int i = 0; i < drawn.subDrawns!.length - 1; i++) {
+      logger.i("Drawing subDrawn ${drawn.subDrawns![i].id} - "
+          "points: ${drawn.subDrawns![i].points.length - 1}");
+      for (int j = 0; j < drawn.subDrawns![i].points.length; j++) {
+        if (!drawn.subDrawns![i].points[j].isEndOfSubDrawing() &&
+            !drawn.subDrawns![i].points[j + 1].isEndOfSubDrawing()) {
+          var paint = drawn.subDrawns![i].paint.toPaint();
+          paint ??= defaultPaint;
+          canvas.drawLine(drawn.subDrawns![i].points[j].toOffset(),
+              drawn.subDrawns![i].points[j + 1].toOffset(), paint);
+        }
       }
     }
   }

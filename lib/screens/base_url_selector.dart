@@ -10,6 +10,7 @@ class EnvironmentSelectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    logger.d('StrokeCap.round.name ${StrokeCap.round.name}');
     return Scaffold(
       appBar: AppBar(title: const Text('Select Environment')),
       body: Padding(
